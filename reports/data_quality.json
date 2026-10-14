@@ -1,0 +1,41 @@
+{
+  "raw_rows": 61765,
+  "after_language_filter": 28261,
+  "after_queue_filter": 28261,
+  "mojibake_or_escape_fixes": 1021,
+  "after_empty_or_short_body": 28203,
+  "after_label_validation": 28203,
+  "conflicting_label_rows_dropped": 0,
+  "duplicates_dropped": 4508,
+  "rows_with_pii_redacted": 1,
+  "final_rows": 23695,
+  "queue_distribution": {
+    "Technical Support": 6848,
+    "Product Support": 4416,
+    "Customer Service": 3563,
+    "IT Support": 2828,
+    "Billing and Payments": 2414,
+    "Returns and Exchanges": 1169,
+    "Service Outages and Maintenance": 934,
+    "Sales and Pre-Sales": 722,
+    "Human Resources": 460,
+    "General Inquiry": 341
+  },
+  "priority_distribution": {
+    "medium": 9726,
+    "high": 9139,
+    "low": 4830
+  },
+  "type_distribution": {
+    "Incident": 9410,
+    "Request": 6870,
+    "Problem": 4922,
+    "Change": 2493
+  },
+  "imbalance_ratio_max_to_min_queue": 20.1,
+  "split_sizes": {
+    "train": 18956,
+    "test": 2370,
+    "val": 2369
+  }
+}
