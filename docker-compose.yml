@@ -1,0 +1,20 @@
+services:
+  api:
+    build: .
+    env_file: .env
+    environment:
+      OLLAMA_URL: http://host.docker.internal:11434
+    ports: ["8000:8000"]
+    volumes:
+      - ./artifacts:/app/artifacts
+      - ./data/processed:/app/data/processed
+  dashboard:
+    build: .
+    command: streamlit run dashboard/app.py --server.port 8501 --server.address 0.0.0.0
+    env_file: .env
+    environment:
+      OLLAMA_URL: http://host.docker.internal:11434
+    ports: ["8501:8501"]
+    volumes:
+      - ./artifacts:/app/artifacts
+      - ./data/processed:/app/data/processed

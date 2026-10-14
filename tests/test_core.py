@@ -1,0 +1,71 @@
+"""Fast unit tests (no model downloads needed)."""
+from pathlib import Path
+
+import pandas as pd
+
+from csi.data.pipeline import clean_text, _dedup_key
+from csi.models.metrics import coverage_precision_curve
+from csi.nlp.urgency import urgency_score
+from csi.rag.chunking import chunk_article, window_sentences
+from csi.rag.retriever import rrf, tokenize
+from csi.text import redact_pii
+
+KB_DIR = Path(__file__).resolve().parent.parent / "data" / "knowledge_base"
+
+
+def test_redact_pii_masks_contact_and_payment_data():
+    text = "Mail me at jane.doe@example.com or +91 98765 43210, card 4111 1111 1111 1111, ip 10.0.0.1"
+    out = redact_pii(text)
+    assert "jane.doe" not in out and "4111" not in out and "98765" not in out and "10.0.0.1" not in out
+    assert {"<email>", "<phone>", "<card>", "<ip>"} <= set(out.replace(",", " ").split())
+
+
+def test_clean_text_fixes_mojibake_and_escaped_newlines():
+    assert clean_text("ich mÃ¶chte\\nhelfen") == "ich möchte\nhelfen"
+    assert clean_text(None) == ""
+
+
+def test_dedup_key_ignores_case_punctuation_and_spacing():
+    assert _dedup_key("Hello,  World!") == _dedup_key("hello world")
+
+
+def test_urgency_escalates_security_breach():
+    probs = {"high": 0.8, "medium": 0.15, "low": 0.05}
+    u = urgency_score(probs, 0.9, "URGENT: our servers were hacked, unauthorized access to production")
+    assert u["tier"] == "P1" and u["score"] >= 80
+    assert "security risk" in u["drivers"]
+
+
+def test_urgency_low_for_calm_question():
+    u = urgency_score({"high": 0.05, "medium": 0.2, "low": 0.75}, 0.05, "Which plans do you offer?")
+    assert u["tier"] == "P4"
+
+
+def test_rrf_rewards_documents_ranked_well_by_both():
+    fused = rrf([[1, 2, 3], [2, 1, 4]])
+    assert max(fused, key=fused.get) in (1, 2) and fused[4] < fused[2]
+
+
+def test_tokenize_drops_stopwords():
+    assert tokenize("Please help, the VPN is down!") == ["help", "vpn", "down"]
+
+
+def test_window_sentences_respects_size_and_overlaps():
+    text = " ".join(f"Sentence number {i} is here." for i in range(40))
+    chunks = window_sentences(text, size=200, overlap=50)
+    assert len(chunks) > 3 and all(len(c) <= 260 for c in chunks)
+
+
+def test_kb_articles_chunk_by_section():
+    chunks = chunk_article(KB_DIR / "KB-002-billing-and-payments.md", 600, 100)
+    assert chunks and all(c.doc_id == "KB-002" for c in chunks)
+    assert any(c.section == "Duplicate or incorrect charges" for c in chunks)
+
+
+def test_coverage_precision_curve_monotonic_coverage():
+    y = ["a", "b", "a", "b"]
+    p = ["a", "a", "a", "b"]
+    conf = [0.9, 0.4, 0.8, 0.6]
+    rows = coverage_precision_curve(y, p, conf, thresholds=[0.3, 0.5, 0.85])
+    assert [r["coverage"] for r in rows] == [1.0, 0.75, 0.25]
+    assert rows[1]["precision"] == 1.0
