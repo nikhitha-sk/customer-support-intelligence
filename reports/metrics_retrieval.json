@@ -1,0 +1,19 @@
+{
+  "bm25": {
+    "precision@5": 0.4313,
+    "mrr@5": 0.7756
+  },
+  "dense": {
+    "precision@5": 0.452,
+    "mrr@5": 0.7831
+  },
+  "hybrid": {
+    "precision@5": 0.4507,
+    "mrr@5": 0.7859
+  },
+  "config": {
+    "queries": 300,
+    "corpus": 18952,
+    "relevance": "retrieved ticket handled by the same queue"
+  }
+}

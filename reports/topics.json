@@ -1,0 +1,506 @@
+{
+  "k": 20,
+  "silhouette": 0.1775,
+  "topics": [
+    {
+      "topic": 0,
+      "label": "performance / server / times",
+      "keywords": [
+        "performance",
+        "server",
+        "times",
+        "load",
+        "project",
+        "slow",
+        "problem",
+        "delays"
+      ],
+      "size": 836,
+      "share": 0.0441,
+      "top_queue": "Technical Support",
+      "high_priority_rate": 0.362,
+      "examples": [
+        "Immediate Help Needed: Technical Problem with Cloud SaaS Service",
+        "Service Performance Concern",
+        "Immediate Attention Needed: Cloud SaaS Service Performance Concerns",
+        "Client Reporting Dashboard Refresh Issue",
+        "Performance Concerns with Cloud SaaS Platform"
+      ]
+    },
+    {
+      "topic": 1,
+      "label": "encryption / data / problem",
+      "keywords": [
+        "encryption",
+        "data",
+        "problem",
+        "medical",
+        "br",
+        "failure",
+        "software",
+        "servers"
+      ],
+      "size": 299,
+      "share": 0.0158,
+      "top_queue": "Technical Support",
+      "high_priority_rate": 0.371,
+      "examples": [
+        "Problem with Data Access Configuration",
+        "Security Product Data Access Problems",
+        "Concern Regarding Possible Data Security Incident",
+        "Problem with Data Access Configurations",
+        "Problem with Ubiquiti UniFi Dream Machine"
+      ]
+    },
+    {
+      "topic": 2,
+      "label": "security / breach / access",
+      "keywords": [
+        "security",
+        "breach",
+        "access",
+        "medical",
+        "data",
+        "unauthorized",
+        "systems",
+        "hospital"
+      ],
+      "size": 2237,
+      "share": 0.118,
+      "top_queue": "Technical Support",
+      "high_priority_rate": 0.408,
+      "examples": [
+        "Urgent: Ongoing System Failures Disrupting EMR/PACS Telehealth Services",
+        "Alert for Unauthorized Entry",
+        "Security Alert: EMR/PACS Integration Compromised",
+        "Critical Security Breach Impacting EMR Integration Platform",
+        "Urgent Security Breach Alert"
+      ]
+    },
+    {
+      "topic": 3,
+      "label": "brand / digital / growth",
+      "keywords": [
+        "brand",
+        "digital",
+        "growth",
+        "strategies",
+        "marketing",
+        "services",
+        "enhance",
+        "expansion"
+      ],
+      "size": 1018,
+      "share": 0.0537,
+      "top_queue": "Customer Service",
+      "high_priority_rate": 0.292,
+      "examples": [
+        "Customer Support Inquiry",
+        "Digital Marketing Strategies",
+        "Efficiently Update Digital Marketing Strategies Today",
+        "Improve Strategies for Digital Marketing Expansion",
+        "Online Marketing"
+      ]
+    },
+    {
+      "topic": 4,
+      "label": "connectivity / network / devices",
+      "keywords": [
+        "connectivity",
+        "network",
+        "devices",
+        "problems",
+        "connection",
+        "router",
+        "facing",
+        "resolve"
+      ],
+      "size": 620,
+      "share": 0.0327,
+      "top_queue": "Technical Support",
+      "high_priority_rate": 0.337,
+      "examples": [
+        "Connectivity Problems with Printer on MacBook Pro",
+        "VPN Access Issue",
+        "Multiple Device Connection Problems",
+        "Network Connection Problems",
+        "Audio Hardware Detected"
+      ]
+    },
+    {
+      "topic": 5,
+      "label": "engagement / targeting / campaign",
+      "keywords": [
+        "engagement",
+        "targeting",
+        "campaign",
+        "marketing",
+        "ad",
+        "digital",
+        "content",
+        "brand"
+      ],
+      "size": 911,
+      "share": 0.0481,
+      "top_queue": "Product Support",
+      "high_priority_rate": 0.314,
+      "examples": [
+        "Customer Support",
+        "Problem with Underwhelming Marketing Agency Campaigns",
+        "Assistance Needed with Digital Marketing Strategies",
+        "Assistance with Marketing Agency Campaign Performance Issues",
+        "Digital Strategies Concern"
+      ]
+    },
+    {
+      "topic": 6,
+      "label": "integration / integrating / step",
+      "keywords": [
+        "integration",
+        "integrating",
+        "step",
+        "provide",
+        "project",
+        "documentation",
+        "guidance",
+        "management"
+      ],
+      "size": 1111,
+      "share": 0.0586,
+      "top_queue": "Technical Support",
+      "high_priority_rate": 0.379,
+      "examples": [
+        "Query About Smart Home System Integration Features",
+        "Feature Query",
+        "Enhancing Multi-Unit Marketing Processes",
+        "Request for CI/CD Pipeline Documentation",
+        "Request for Integration Assistance"
+      ]
+    },
+    {
+      "topic": 7,
+      "label": "integration / problem / api",
+      "keywords": [
+        "integration",
+        "problem",
+        "api",
+        "updates",
+        "recent",
+        "project",
+        "compatibility",
+        "resolve"
+      ],
+      "size": 647,
+      "share": 0.0341,
+      "top_queue": "Technical Support",
+      "high_priority_rate": 0.366,
+      "examples": [
+        "Device Compatibility Concern",
+        "Device Software Compatibility Concerns",
+        "Challenges with Device Software Integration",
+        "Problems with Integrations",
+        "Technical Problem"
+      ]
+    },
+    {
+      "topic": 8,
+      "label": "service / outage / server",
+      "keywords": [
+        "service",
+        "outage",
+        "server",
+        "impacting",
+        "downtime",
+        "overload",
+        "problem",
+        "disruptions"
+      ],
+      "size": 769,
+      "share": 0.0406,
+      "top_queue": "Service Outages and Maintenance",
+      "high_priority_rate": 0.648,
+      "examples": [
+        "Request for Issue Explanation",
+        "Query About Future Service Disruptions and Maintenance Timelines",
+        "Intermittent Access Problems on SaaS Platform",
+        "Multiple Equipment Failures Affecting Operations",
+        "Critical Support Needed for Cloud-Native SaaS System Disruption Affecting Business Functions"
+      ]
+    },
+    {
+      "topic": 9,
+      "label": "crashes / problem / software",
+      "keywords": [
+        "crashes",
+        "problem",
+        "software",
+        "login",
+        "restarting",
+        "updates",
+        "recent",
+        "project"
+      ],
+      "size": 1001,
+      "share": 0.0528,
+      "top_queue": "Technical Support",
+      "high_priority_rate": 0.515,
+      "examples": [
+        "Unable to Access Office Applications",
+        "Overheating Concern",
+        "Malfunction",
+        "Mac Mini System Instability",
+        "Urgent Login Problem with QuickBooks Account"
+      ]
+    },
+    {
+      "topic": 10,
+      "label": "medical / security / data",
+      "keywords": [
+        "medical",
+        "security",
+        "data",
+        "information",
+        "measures",
+        "hospital",
+        "sensitive",
+        "securing"
+      ],
+      "size": 1708,
+      "share": 0.0901,
+      "top_queue": "Customer Service",
+      "high_priority_rate": 0.34,
+      "examples": [
+        "Guidelines for Incorporating Seagate Expansion Drives",
+        "Guidance on Secure EMR Integration",
+        "Advice on Securing Telehealth Platforms",
+        "Request for Documentation and Expert Support for Securely Integrating Valve Index VR Kit with Ubuntu",
+        "Security Management Summary"
+      ]
+    },
+    {
+      "topic": 11,
+      "label": "project management / saas / integration",
+      "keywords": [
+        "project management",
+        "saas",
+        "integration",
+        "platform",
+        "integrating",
+        "features",
+        "provide",
+        "information"
+      ],
+      "size": 1167,
+      "share": 0.0616,
+      "top_queue": "Customer Service",
+      "high_priority_rate": 0.33,
+      "examples": [
+        "Query Regarding Integration Resources",
+        "Inquiry Regarding Agile Team Configuration Details",
+        "Improving Agile Microservices Processes",
+        "Sales Question",
+        "Inquire About Advanced Capabilities Support for SaaS Solution"
+      ]
+    },
+    {
+      "topic": 12,
+      "label": "payment / billing / options",
+      "keywords": [
+        "payment",
+        "billing",
+        "options",
+        "plans",
+        "pricing",
+        "discounts",
+        "available",
+        "details"
+      ],
+      "size": 467,
+      "share": 0.0246,
+      "top_queue": "Billing and Payments",
+      "high_priority_rate": 0.281,
+      "examples": [
+        "Inquiry for Detailed Information on Agency Offerings",
+        "Inquiry for In-Depth Details on Financial Institution Offerings",
+        "Billing Instructions",
+        "Inquiry About Company Offerings",
+        "Request for Company Overview Details"
+      ]
+    },
+    {
+      "topic": 13,
+      "label": "synchronization / project / problem",
+      "keywords": [
+        "synchronization",
+        "project",
+        "problem",
+        "syncing",
+        "timelines",
+        "api",
+        "data",
+        "restarting"
+      ],
+      "size": 479,
+      "share": 0.0253,
+      "top_queue": "Technical Support",
+      "high_priority_rate": 0.336,
+      "examples": [
+        "Problem with Account Management Center Data Syncing",
+        "Interdepartmental Coordination Difficulties",
+        "Problem with Agile Team Collaboration Tools",
+        "Synchronization Problems",
+        "Difficulties in Coordinating Agile Teams"
+      ]
+    },
+    {
+      "topic": 14,
+      "label": "marketing / digital / strategies",
+      "keywords": [
+        "marketing",
+        "digital",
+        "strategies",
+        "brand",
+        "growth",
+        "tools",
+        "enhance",
+        "strategy"
+      ],
+      "size": 623,
+      "share": 0.0329,
+      "top_queue": "Technical Support",
+      "high_priority_rate": 0.38,
+      "examples": [
+        "Question About Marketing Agency Software Compatibility",
+        "Inquiry for Comprehensive Marketing Service Details",
+        "Organizational Revision",
+        "Revise Marketing Firm Framework",
+        "Marketing Summary"
+      ]
+    },
+    {
+      "topic": 15,
+      "label": "campaign / digital / marketing",
+      "keywords": [
+        "campaign",
+        "digital",
+        "marketing",
+        "agency",
+        "problem",
+        "software",
+        "tools",
+        "metrics"
+      ],
+      "size": 781,
+      "share": 0.0412,
+      "top_queue": "Technical Support",
+      "high_priority_rate": 0.51,
+      "examples": [
+        "Urgent: Technical Issue Disrupting Campaign Performance Metrics Analysis",
+        "Immediate Attention Needed: Multiple Marketing Applications Down",
+        "Integration Problem",
+        "Digital Strategy Campaign Significantly Underperformed",
+        "Digital Advertising Campaign Problem"
+      ]
+    },
+    {
+      "topic": 16,
+      "label": "billing / payment / account",
+      "keywords": [
+        "billing",
+        "payment",
+        "account",
+        "discrepancies",
+        "invoice",
+        "charges",
+        "subscription",
+        "matter"
+      ],
+      "size": 726,
+      "share": 0.0383,
+      "top_queue": "Billing and Payments",
+      "high_priority_rate": 0.311,
+      "examples": [
+        "Inquiry Regarding Invoice Details",
+        "Problem with Payment Billing Procedures",
+        "Inquiry for Comprehensive Billing Procedure Details",
+        "Problem Report",
+        "Invoice Inquiry"
+      ]
+    },
+    {
+      "topic": 17,
+      "label": "investment / data / analytics",
+      "keywords": [
+        "investment",
+        "data",
+        "analytics",
+        "problem",
+        "financial",
+        "optimization",
+        "software",
+        "tool"
+      ],
+      "size": 989,
+      "share": 0.0522,
+      "top_queue": "Product Support",
+      "high_priority_rate": 0.325,
+      "examples": [
+        "Critical Alert: Fault in Automated Portfolio Rebalancing System",
+        "Issue with Automated Rebalancing Systems",
+        "Critical Problem with Automated Rebalancing System",
+        "Excel 2021 Formula Error Notification",
+        "Rebalancing Concern"
+      ]
+    },
+    {
+      "topic": 18,
+      "label": "analytics / data / problem",
+      "keywords": [
+        "analytics",
+        "data",
+        "problem",
+        "software",
+        "investment",
+        "dashboard",
+        "restarting",
+        "platform"
+      ],
+      "size": 1171,
+      "share": 0.0618,
+      "top_queue": "Technical Support",
+      "high_priority_rate": 0.479,
+      "examples": [
+        "Updating the Client Reporting Interface",
+        "Problem with System",
+        "Problem Encountered",
+        "Problem with Analytics Tool",
+        "Problem Detected in Investment Analytics System"
+      ]
+    },
+    {
+      "topic": 19,
+      "label": "investment / analytics / tools",
+      "keywords": [
+        "investment",
+        "analytics",
+        "tools",
+        "data",
+        "optimization",
+        "decisions",
+        "informed",
+        "optimizing"
+      ],
+      "size": 1392,
+      "share": 0.0734,
+      "top_queue": "Customer Service",
+      "high_priority_rate": 0.347,
+      "examples": [
+        "Proposal for Upgrades to Big Data Analytics Systems",
+        "Financial Investment Inquiry",
+        "Inquiry for Clarification",
+        "Financial Planning",
+        "Query Regarding ESG Data Analysis"
+      ]
+    }
+  ]
+}
