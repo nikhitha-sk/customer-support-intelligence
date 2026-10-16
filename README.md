@@ -183,6 +183,9 @@ The dashboard draws each theme on a **volume × urgency** chart. Themes in the t
 - **Overview:** key numbers, tickets by team and priority, and a live log of triaged tickets.
 - **Model performance:** baseline vs DistilBERT, confusion matrix, auto-routing chart, search scores and the data-cleaning funnel.
 - **Works without an API key:** it tries Groq (cloud) → Ollama (local) → an offline fallback, so the demo always works.
+  The offline fallback picks the best sentences from the help articles. Help articles are written for agents, so it first
+  **removes agent-only instructions** ("Agents must…", "check the internal console") and **rewrites the rest for the customer**
+  ("Ask the customer to restart the app" → "Please restart the app", "the customer is entitled" → "you are entitled").
 - **Responsible AI:** personal data is hidden, replies are checked against sources, and urgent or uncertain tickets go to a human.
 
 ---
@@ -286,6 +289,7 @@ What was built, in order. Each line matches a git commit.
 | 3 | Search (RAG), complaint themes and the LangGraph triage agent |
 | 4 | FastAPI service, Streamlit dashboard, tests, Docker setup and docs |
 | 5 | README rewritten in simple English |
+| 6 | Offline replies now read like they are written to the customer (agent-only sentences removed) |
 
 ---
 

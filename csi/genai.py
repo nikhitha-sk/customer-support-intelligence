@@ -38,13 +38,49 @@ def format_sources(kb_hits: list[dict], similar: list[dict]) -> str:
     return "\n\n".join(parts)
 
 
+# KB articles are written for agents. These sentences are internal instructions
+# ("Agents must...", "Ask the customer...", "check the billing console") and must not reach a customer.
+_AGENT_FACING = re.compile(
+    r"\bagents?\b|\b(internal|console|on-call|team lead|escalat\w*|page the)\b"
+    r"|^(ask|remind|forward|before replying|check|verify|first verify|share|include|link|open)\b"
+    r"|\bmust not make statements\b",
+    re.I,
+)
+# Instructions that are useful to the customer once reworded ("Ask the customer to restart..." -> "Please restart...").
+_TO_REQUEST = [
+    (re.compile(r"^ask the customer to\b", re.I), "Please"),
+    (re.compile(r"^remind customers that\b", re.I), "Please note that"),
+]
+_TO_SECOND_PERSON = [
+    (re.compile(r"\b(the|a) customer is\b", re.I), "you are"),
+    (re.compile(r"\b(the|a) customer's\b", re.I), "your"),
+    (re.compile(r"\b(the|a) customer\b", re.I), "you"),
+    (re.compile(r"\bcustomers (can|do not|are|should|will|receive)\b", re.I), r"you \1"),
+]
+
+
+def customer_facing(sentence: str) -> str | None:
+    """Turn a KB sentence into customer-facing wording, or return None if it is an agent-only instruction."""
+    for pattern, repl in _TO_REQUEST:
+        sentence = pattern.sub(repl, sentence)
+    if _AGENT_FACING.search(sentence):
+        return None
+    for pattern, repl in _TO_SECOND_PERSON:
+        sentence = pattern.sub(repl, sentence)
+    if re.search(r"\byou\b", sentence, re.I):
+        sentence = re.sub(r"\btheir\b", "your", sentence)
+    return sentence[0].upper() + sentence[1:]
+
+
 def _fallback_reply(ticket: str, kb_hits: list[dict], similar: list[dict]) -> str:
     """Extractive reply used when no LLM is reachable: picks the source sentences most
     similar to the ticket and stitches them into a cited template."""
     candidates: list[tuple[str, str]] = []
     for h in kb_hits[:3]:
         body = h["text"].split(": ", 1)[-1]
-        candidates += [(s, h["chunk_id"]) for s in split_sentences(body)]
+        for s in split_sentences(body):
+            if (s := customer_facing(s)) is not None:
+                candidates.append((s, h["chunk_id"]))
     if not candidates and similar:
         candidates += [(s, similar[0]["ticket_id"]) for s in split_sentences(similar[0]["answer"])[:3]]
     if not candidates:

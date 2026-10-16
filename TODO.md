@@ -19,7 +19,7 @@
 - [ ] Error analysis notebook with misclassified examples per queue.
 - [ ] Urgency score validation: report AUROC against human "high" priority labels and tune the component weights.
 - [ ] Cross-encoder re-ranker on top of hybrid retrieval, and a labelled golden set for KB retrieval (Recall@k).
-- [ ] Better offline reply fallback: filter out agent-facing policy sentences such as "agents must…" so offline drafts read as customer-facing.
+- [x] Better offline reply fallback: filter out agent-facing policy sentences such as "agents must…" so offline drafts read as customer-facing.
 
 ## Phase 3: product and deployment
 

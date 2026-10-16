@@ -69,3 +69,19 @@ def test_coverage_precision_curve_monotonic_coverage():
     rows = coverage_precision_curve(y, p, conf, thresholds=[0.3, 0.5, 0.85])
     assert [r["coverage"] for r in rows] == [1.0, 0.75, 0.25]
     assert rows[1]["precision"] == 1.0
+
+
+def test_customer_facing_drops_agent_instructions():
+    from csi.genai import customer_facing
+    assert customer_facing("Agents must share the refund reference number with the customer.") is None
+    assert customer_facing("Before replying, check the internal status dashboard.") is None
+    assert customer_facing("Escalate any request for an exception above 500 USD to a team lead.") is None
+
+
+def test_customer_facing_rewrites_to_second_person():
+    from csi.genai import customer_facing
+    assert customer_facing("Ask the customer to restart the application.") == "Please restart the application."
+    assert customer_facing("The customer is entitled to a free replacement.") == "You are entitled to a free replacement."
+    assert customer_facing("Customers can reset their password.") == "You can reset your password."
+    assert customer_facing("Refunds are issued to the original payment method.") == \
+        "Refunds are issued to the original payment method."
