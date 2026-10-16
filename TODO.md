@@ -21,6 +21,13 @@
 - [x] Cross-encoder re-ranker on top of hybrid retrieval, and a labelled golden set for KB retrieval (Recall@k). Result: dense search wins; re-ranker kept as an option.
 - [x] Better offline reply fallback: filter out agent-facing policy sentences such as "agents must…" so offline drafts read as customer-facing.
 
+- [ ] **Near-duplicate-aware split** (found by the leakage check): ~50% of test tickets have a near-copy in train
+  (cosine ≥ 0.95), and accuracy on truly new tickets is much lower. Group near-duplicates into clusters and split
+  by cluster, then retrain everything so reported scores match real-world performance.
+- [ ] Two-stage hierarchical router: a group model (8 classes) plus a small model inside the technical group,
+  compared with the current probability-sum group fallback in `csi/routing.py`.
+- [ ] Grow the KB golden set beyond 40 questions, including exact error codes and product names.
+
 ## Phase 3: product and deployment
 
 - [ ] Deploy a live demo on Hugging Face Spaces or Streamlit Community Cloud (baseline model and index fit in the free tier).
