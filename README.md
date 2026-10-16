@@ -261,7 +261,9 @@ python -m csi.rag.evaluate_kb      # test help-article search (golden set)   (~1
 python -m csi.models.train --epochs 2   # train DistilBERT (~1.5-2 h on CPU, ~10 min on a GPU)
 ```
 
-You can skip the DistilBERT step. The app then uses the TF-IDF baseline automatically.
+You can skip the DistilBERT step. The app then uses the TF-IDF baseline.
+
+**Which model does the app use?** With `CSI_CLASSIFIER=auto` (the default), the app compares the test scores of both models and uses the one with the better macro F1 for team routing. So a newly trained model that is *worse* never replaces a better one by accident. You can force a model with `CSI_CLASSIFIER=distilbert` or `CSI_CLASSIFIER=tfidf`. The `/health` endpoint shows which one is in use.
 
 **3. Start the app**
 
@@ -372,6 +374,7 @@ What was built, in order. Each line matches a git commit.
 | 10 | Offline reply filter catches more agent-only instructions and fixes grammar |
 | 11 | Hand-labelled golden set for help-article search, optional cross-encoder re-ranker; dense search became the default |
 | 12 | Group routing: unsure technical tickets go to a shared technical group (auto-routing 28% → 61%) |
+| 13 | The app automatically serves whichever classifier scored better on the test set |
 
 ---
 

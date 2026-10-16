@@ -63,6 +63,8 @@ class Settings:
         "CSI_SENTIMENT_MODEL", "cardiffnlp/twitter-roberta-base-sentiment-latest"
     )
     max_length: int = int(_env("CSI_MAX_LENGTH", "128"))
+    # Which classifier to serve: auto (best test macro F1) | distilbert | tfidf
+    classifier: str = _env("CSI_CLASSIFIER", "auto")
 
     # RAG
     chunk_size: int = int(_env("CSI_CHUNK_SIZE", "600"))

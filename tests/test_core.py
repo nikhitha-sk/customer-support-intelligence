@@ -144,3 +144,24 @@ def test_route_confident_urgent_and_unsure_cases():
     assert route(sure, urgency=95, threshold=0.6, escalation=80)["decision"] == "human_review"
     unsure = {"Billing and Payments": 0.5, "Customer Service": 0.5}
     assert route(unsure, urgency=30, threshold=0.6, escalation=80)["decision"] == "human_review"
+
+
+def test_choose_backend_serves_the_better_tested_model(tmp_path, monkeypatch):
+    import dataclasses
+    import json
+
+    from csi.config import Paths, settings
+    from csi.models import predictor
+
+    paths = Paths(models=tmp_path / "models", reports=tmp_path)
+    monkeypatch.setattr(predictor, "settings", dataclasses.replace(settings, paths=paths))
+    assert predictor.choose_backend("auto") == predictor.TFIDF            # transformer not trained
+    (tmp_path / "models" / "multitask_distilbert").mkdir(parents=True)
+    (tmp_path / "models" / "multitask_distilbert" / "heads.pt").touch()
+    assert predictor.choose_backend("auto") == predictor.TFIDF            # trained but not evaluated
+    (tmp_path / "metrics_baseline.json").write_text(json.dumps({"queue": {"macro_f1": 0.60}}))
+    (tmp_path / "metrics_distilbert.json").write_text(json.dumps({"queue": {"macro_f1": 0.55}}))
+    assert predictor.choose_backend("auto") == predictor.TFIDF            # transformer is worse
+    (tmp_path / "metrics_distilbert.json").write_text(json.dumps({"queue": {"macro_f1": 0.65}}))
+    assert predictor.choose_backend("auto") == predictor.DISTILBERT
+    assert predictor.choose_backend("tfidf") == predictor.TFIDF           # explicit choice wins

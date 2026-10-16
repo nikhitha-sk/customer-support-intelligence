@@ -38,8 +38,8 @@ def probabilities(test: pd.DataFrame) -> dict[str, np.ndarray]:
     base = joblib.load(p.models / "baseline_queue.joblib")
     out = {"tfidf-logreg": base.predict_proba(test["text"])[:, [list(base.classes_).index(l) for l in labels]]}
     if (p.models / "multitask_distilbert" / "heads.pt").exists():
-        from csi.models.predictor import get_classifier
-        clf, texts, rows = get_classifier(), test["text"].tolist(), []
+        from csi.models.predictor import TicketClassifier
+        clf, texts, rows = TicketClassifier(backend="distilbert"), test["text"].tolist(), []
         for i in range(0, len(texts), 64):
             rows += [[r["queue"]["probabilities"][l] for l in labels] for r in clf.predict(texts[i:i + 64])]
         out["distilbert-multitask"] = np.array(rows)
