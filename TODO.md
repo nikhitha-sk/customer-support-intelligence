@@ -28,5 +28,5 @@
 - [x] Agent feedback loop: thumbs up/down on drafts stored in SQLite and used as an evaluation set.
 - [ ] Time-series trend monitoring once real timestamps exist (the public dataset has none): weekly theme volumes and alerting.
 - [ ] Multilingual support (the dataset has 33k German tickets): multilingual MiniLM / XLM-R encoder.
-- [ ] Authentication and rate limiting on the API; CI workflow running `pytest` on every push.
+- [x] Authentication and rate limiting on the API; CI workflow running `pytest` on every push.
 - [ ] Scale-out data pipeline with PySpark for millions of tickets (current pandas pipeline handles ~60k rows in under a minute).

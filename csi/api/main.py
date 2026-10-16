@@ -6,10 +6,11 @@ from __future__ import annotations
 
 import logging
 
-from fastapi import FastAPI, HTTPException
+from fastapi import APIRouter, Depends, FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
 from csi import service
+from csi.api.security import rate_limit, require_api_key
 from csi.config import settings
 from csi.llm import get_llm
 from csi.models.predictor import get_classifier
@@ -19,8 +20,10 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name
 app = FastAPI(
     title="Customer Support Intelligence API",
     description="Ticket routing, urgency scoring, theme detection and RAG-grounded reply drafting.",
-    version="1.0.0",
+    version="1.1.0",
 )
+# Every /v1 route needs the API key (when CSI_API_KEY is set) and is rate limited per client.
+v1 = APIRouter(prefix="/v1", dependencies=[Depends(require_api_key), Depends(rate_limit)])
 
 
 class Ticket(BaseModel):
@@ -56,20 +59,20 @@ def health() -> dict:
             "llm_provider": llm.provider, "llm_model": llm.model}
 
 
-@app.post("/v1/classify")
+@v1.post("/classify")
 def classify(ticket: Ticket) -> dict:
     """Fast path: queue, priority, type, sentiment, urgency and theme (no LLM call)."""
     return service.classify_batch([ticket.model_dump()], source="api")[0]
 
 
-@app.post("/v1/classify/batch")
+@v1.post("/classify/batch")
 def classify_batch(req: BatchRequest) -> dict:
     results = service.classify_batch([t.model_dump() for t in req.tickets], source="api-batch")
     results.sort(key=lambda r: -r["urgency"])
     return {"count": len(results), "results": results}
 
 
-@app.post("/v1/triage")
+@v1.post("/triage")
 def triage(ticket: Ticket) -> dict:
     """Full agentic workflow: classify -> assess urgency -> (escalate) -> retrieve -> draft -> guardrail."""
     try:
@@ -78,17 +81,17 @@ def triage(ticket: Ticket) -> dict:
         raise HTTPException(503, f"Model or index artifact missing: {exc}. Run the training pipeline first.")
 
 
-@app.post("/v1/summarize")
+@v1.post("/summarize")
 def summarize(req: TextRequest) -> dict:
     return service.summarize(req.text)
 
 
-@app.post("/v1/search")
+@v1.post("/search")
 def search(req: SearchRequest) -> dict:
     return service.search(req.query, req.k)
 
 
-@app.post("/v1/feedback", status_code=201)
+@v1.post("/feedback", status_code=201)
 def feedback(fb: Feedback) -> dict:
     """Agent rating of a drafted reply (and the right queue if routing was wrong)."""
     if fb.corrected_queue and fb.corrected_queue not in settings.queues:
@@ -100,12 +103,12 @@ def feedback(fb: Feedback) -> dict:
     return {"feedback_id": fid}
 
 
-@app.get("/v1/feedback/summary")
+@v1.get("/feedback/summary")
 def feedback_summary() -> dict:
     return service.feedback_summary()
 
 
-@app.get("/v1/insights/queues")
+@v1.get("/insights/queues")
 def queue_insights() -> list[dict]:
     df = service.query("""
         SELECT queue, COUNT(*) AS tickets,
@@ -115,8 +118,11 @@ def queue_insights() -> list[dict]:
     return df.to_dict(orient="records")
 
 
-@app.get("/v1/model/metrics")
+@v1.get("/model/metrics")
 def model_metrics() -> dict:
     return {"baseline": service.load_report("metrics_baseline.json"),
             "distilbert": service.load_report("metrics_distilbert.json"),
             "retrieval": service.load_report("metrics_retrieval.json")}
+
+
+app.include_router(v1)

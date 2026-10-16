@@ -1,5 +1,7 @@
 # Customer Support Intelligence Platform
 
+[![tests](https://github.com/nikhitha-sk/customer-support-intelligence/actions/workflows/tests.yml/badge.svg)](https://github.com/nikhitha-sk/customer-support-intelligence/actions/workflows/tests.yml)
+
 A project that helps a customer-support team work faster. It reads support tickets and:
 
 1. **Sends each ticket to the right team** (for example "Billing" or "IT Support").
@@ -226,6 +228,8 @@ streamlit run dashboard/app.py           # dashboard at http://localhost:8501
 pytest -q                                # run the tests
 ```
 
+The tests also run automatically on GitHub (GitHub Actions) every time code is pushed. See `.github/workflows/tests.yml`.
+
 **Docker:** after step 2 (so the `artifacts/` folder exists), run `docker compose up --build`. The API runs on port 8000 and the dashboard on port 8501.
 
 ---
@@ -244,6 +248,12 @@ pytest -q                                # run the tests
 | GET | `/v1/feedback/summary` | Helpful rate and how often agents corrected the team |
 | GET | `/v1/insights/queues` | Ticket numbers per team (SQL) |
 | GET | `/v1/model/metrics` | Model test results |
+
+**Security (optional):**
+
+- **API key:** set `CSI_API_KEY` in `.env`. Then every `/v1/...` call must send the header `X-API-Key: <your key>`, or it gets error **401**. If you leave it empty, the API is open (fine for a local demo).
+- **Rate limit:** each client can make `CSI_RATE_LIMIT` calls per minute (default 60). Extra calls get error **429** and a `Retry-After` header that says how many seconds to wait. Set it to 0 to turn it off.
+- `/health` is always open, so monitoring tools can check the service.
 
 Example:
 
@@ -269,10 +279,12 @@ csi/
   agent.py             the LangGraph triage flow
   service.py           shared logic used by the API and the dashboard
   api/main.py          FastAPI app
+  api/security.py      API key check and rate limit
 dashboard/app.py       Streamlit dashboard
 data/knowledge_base/   sample help articles (for a made-up company)
 reports/               test results (JSON)
-tests/                 unit tests
+tests/                 unit tests (core logic + API)
+.github/workflows/     CI: runs the tests on every push
 ```
 
 ---
@@ -296,6 +308,7 @@ What was built, in order. Each line matches a git commit.
 | 5 | README rewritten in simple English |
 | 6 | Offline replies now read like they are written to the customer (agent-only sentences removed) |
 | 7 | Feedback loop: agents rate drafts and fix wrong teams; saved in SQLite, shown in the dashboard and API |
+| 8 | API security (optional API key + rate limit) and GitHub Actions CI that runs the tests |
 
 ---
 

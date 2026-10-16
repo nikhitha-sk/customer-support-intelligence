@@ -82,6 +82,9 @@ class Settings:
     llm_timeout: float = float(_env("CSI_LLM_TIMEOUT", "120"))
 
     api_url: str = _env("CSI_API_URL", "http://localhost:8000")
+    # API protection: empty key = open API (local demo); rate limit 0 = unlimited.
+    api_key: str = _env("CSI_API_KEY", "")
+    rate_limit_per_minute: int = int(_env("CSI_RATE_LIMIT", "60"))
     paths: Paths = field(default_factory=Paths)
 
 
