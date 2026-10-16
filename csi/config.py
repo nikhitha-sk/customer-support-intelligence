@@ -68,6 +68,11 @@ class Settings:
     chunk_size: int = int(_env("CSI_CHUNK_SIZE", "600"))
     chunk_overlap: int = int(_env("CSI_CHUNK_OVERLAP", "100"))
     top_k: int = int(_env("CSI_TOP_K", "4"))
+    # KB search: "dense" won on the hand-labelled golden set (see csi/rag/evaluate_kb.py); "hybrid" and "bm25" remain.
+    kb_search_mode: str = _env("CSI_KB_SEARCH_MODE", "dense")
+    # Optional second stage: re-score the search candidates with a cross-encoder.
+    use_reranker: bool = _env("CSI_RERANK", "0") == "1"
+    reranker_model: str = _env("CSI_RERANKER_MODEL", "cross-encoder/ms-marco-MiniLM-L-6-v2")
 
     # Agent guardrails
     route_confidence_threshold: float = float(_env("CSI_ROUTE_THRESHOLD", "0.60"))

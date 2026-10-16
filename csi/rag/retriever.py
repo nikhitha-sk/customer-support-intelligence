@@ -1,5 +1,6 @@
-"""Hybrid retrieval over two sources:
-  * knowledge-base chunks  -> dense (FAISS) + sparse (BM25), merged with reciprocal-rank fusion
+"""Retrieval over two sources:
+  * knowledge-base chunks  -> dense (FAISS), sparse (BM25) or hybrid (reciprocal-rank fusion),
+                              optionally re-ranked with a cross-encoder
   * historical resolved tickets -> dense FAISS search ("how did we solve this last time?")
 """
 from __future__ import annotations
@@ -16,7 +17,7 @@ from rank_bm25 import BM25Okapi
 
 from csi.config import settings
 from csi.rag.chunking import Chunk
-from csi.rag.embeddings import embed
+from csi.rag.embeddings import embed, rerank_scores
 
 _STOP = set("""a an the and or but if of to in on at for with by from as is are was were be been being
 this that these those it its i we you he she they my our your their me us them do does did have has had
@@ -47,7 +48,9 @@ class Retriever:
         self.ticket_index = faiss.read_index(str(d / "tickets.faiss"))
 
     def search_kb(self, query: str, k: int = settings.top_k, candidates: int = 20,
-                  mode: str = "hybrid", query_vec: np.ndarray | None = None) -> list[dict]:
+                  mode: str | None = None, query_vec: np.ndarray | None = None,
+                  rerank: bool | None = None) -> list[dict]:
+        mode = mode or settings.kb_search_mode
         qv = query_vec if query_vec is not None else embed([query])
         sims, dense_ids = self.kb_index.search(qv, min(candidates, len(self.kb_chunks)))
         dense_rank = [int(i) for i in dense_ids[0] if i >= 0]
@@ -62,6 +65,12 @@ class Retriever:
             fused = {i: float(bm25_scores[i]) for i in sparse_rank}
         else:
             fused = rrf([dense_rank, sparse_rank])
+
+        rerank = settings.use_reranker if rerank is None else rerank
+        if rerank and fused:
+            pool = sorted(fused, key=fused.get, reverse=True)[:candidates]
+            scores = rerank_scores(query, [self.kb_chunks[i].text for i in pool])
+            fused = {i: float(s) for i, s in zip(pool, scores)}
 
         top = sorted(fused, key=fused.get, reverse=True)[:k]
         out = []

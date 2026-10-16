@@ -77,7 +77,7 @@ Step by step:
 
    The score maps to an SLA tier: **P1** (reply within 1 hour) to **P4** (3 business days). The system also lists the reasons, so a person can see *why*.
 4. **Escalate (only if needed).** If urgency is 80 or more, or the model is less than 60% sure about the team, a human lead reviews the ticket.
-5. **Search.** Find the most useful help-article sections and the most similar *solved* tickets.
+5. **Search.** Find the most useful help-article sections (meaning-based search, chosen by a test, see results 3b) and the most similar *solved* tickets.
 6. **Draft a reply.** An AI model (LLM) writes a short reply using **only** the search results, and cites them like `[KB-002#0]`.
 7. **Safety check (guardrail).** Check that every sentence is supported by a source, that the citations are real, and that no personal data leaks. If the check fails, the AI tries again in a stricter mode.
 8. **Finish.** Return an action plan: which team, which SLA, and whether the reply needs a human review.
@@ -101,6 +101,9 @@ This flow is built with **LangGraph** (`csi/agent.py`). The dashboard shows ever
 | **FAISS** | A library that finds the closest embeddings very fast (meaning-based search). |
 | **BM25** | Classic keyword search, like a search engine. |
 | **Hybrid search** | Combine FAISS and BM25 results (with Reciprocal Rank Fusion), so we get both meaning and exact-word matches. |
+| **Re-ranker (cross-encoder)** | A second, slower model that reads the question and each search result together and re-orders them. More precise, but slower. |
+| **Golden set** | A small test set where a person wrote down the right answer by hand. |
+| **Recall@k** | How often the right answer is in the top k results. |
 | **RAG** | Retrieval-Augmented Generation: first **search** for facts, then let the AI **write** using only those facts. This reduces made-up answers. |
 | **LLM** | Large Language Model, the AI that writes the reply (Groq-hosted Llama, or Gemma running locally with Ollama). |
 | **Guardrail** | An automatic check that stops bad output (unsupported claims, fake citations, personal data). |
@@ -178,6 +181,22 @@ We don't have to auto-route every ticket. We can auto-route only the ones where 
 
 A result counts as "relevant" if that past ticket was handled by the same team.
 
+### 3b. Finding the right help article (hand-labelled test, 40 questions)
+
+The test above uses a rough stand-in for "relevant" (same team). So we also wrote **40 real-sounding customer questions** and labelled, by hand, the one help-article section that answers each ([`data/eval/kb_golden.jsonl`](data/eval/kb_golden.jsonl)). The questions use everyday words, not the article's words, the way real customers write. Run it with `python -m csi.rag.evaluate_kb`.
+
+| Search method | Right section is #1 | Right section in top 3 | MRR@5 | Time per question |
+|---|---|---|---|---|
+| BM25 (keywords) | 38% | 63% | 0.51 | ~1 ms |
+| **Dense (meaning)** | **85%** | **95%** | **0.90** | ~1 ms |
+| Hybrid (keywords + meaning) | 60% | 90% | 0.75 | ~1 ms |
+| Hybrid + re-ranker | 83% | 93% | 0.88 | ~500 ms |
+| Dense + re-ranker | 85% | 93% | 0.89 | ~500 ms |
+
+**What this means:** when customers use their own words, keyword search often misses, and mixing it in pulls the hybrid result down. A **re-ranker** (a cross-encoder that reads the question and each passage together) fixes most of that, but it is about 500 times slower and is not better than dense alone. So help-article search now uses **dense** by default. You can change this with `CSI_KB_SEARCH_MODE=hybrid` and turn the re-ranker on with `CSI_RERANK=1`.
+
+*Note:* 40 questions is a small test, and keyword search would do better on exact error codes or product names. It is still much better evidence than guessing.
+
 ### 4. Common complaint themes
 
 We found **20 themes** (the number was picked with the silhouette score). Examples: *service / outage / server* (65% high priority), *security / breach / unauthorized access*, *billing / payment / discrepancies*, *crashes / software / login*.
@@ -226,6 +245,7 @@ python -m csi.models.baseline      # train TF-IDF baselines                  (~5
 python -m csi.rag.build_index      # build search indexes                    (~5 min)
 python -m csi.nlp.topics           # find complaint themes                   (~1 min)
 python -m csi.rag.evaluate         # test the search quality                 (~1 min)
+python -m csi.rag.evaluate_kb      # test help-article search (golden set)   (~1 min)
 python -m csi.models.train --epochs 2   # train DistilBERT (~1.5-2 h on CPU, ~10 min on a GPU)
 ```
 
@@ -284,7 +304,7 @@ csi/
   data/pipeline.py     download -> clean -> remove duplicates -> split -> SQLite
   models/              baseline, DistilBERT, training, metrics, predictor
   nlp/                 sentiment, urgency score, complaint themes
-  rag/                 split articles into chunks, embeddings, search indexes, search evaluation
+  rag/                 split articles into chunks, embeddings, search indexes, re-ranker, search evaluation
   llm.py               connects to Groq / Ollama / offline mode
   genai.py             draft replies, summaries, safety check
   agent.py             the LangGraph triage flow
@@ -293,6 +313,7 @@ csi/
   api/security.py      API key check and rate limit
 dashboard/app.py       Streamlit dashboard
 data/knowledge_base/   sample help articles (for a made-up company)
+data/eval/             hand-labelled test questions for help-article search
 reports/               test results (JSON)
 tests/                 unit tests (core logic + API)
 .github/workflows/     CI: runs the tests on every push
@@ -335,6 +356,8 @@ What was built, in order. Each line matches a git commit.
 | 7 | Feedback loop: agents rate drafts and fix wrong teams; saved in SQLite, shown in the dashboard and API |
 | 8 | API security (optional API key + rate limit) and GitHub Actions CI that runs the tests |
 | 9 | Error analysis: top mix-ups, grouped routing, label-noise check and a test-set leakage check |
+| 10 | Offline reply filter catches more agent-only instructions and fixes grammar |
+| 11 | Hand-labelled golden set for help-article search, optional cross-encoder re-ranker; dense search became the default |
 
 ---
 

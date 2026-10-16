@@ -18,7 +18,7 @@
 - [x] Label-noise audit: inspect the confusion between Technical Support, IT Support and Product Support, and consider merging or hierarchical routing.
 - [x] Error analysis with misclassified examples per queue (`csi/models/error_analysis.py`, a script instead of a notebook).
 - [ ] Urgency score validation: report AUROC against human "high" priority labels and tune the component weights.
-- [ ] Cross-encoder re-ranker on top of hybrid retrieval, and a labelled golden set for KB retrieval (Recall@k).
+- [x] Cross-encoder re-ranker on top of hybrid retrieval, and a labelled golden set for KB retrieval (Recall@k). Result: dense search wins; re-ranker kept as an option.
 - [x] Better offline reply fallback: filter out agent-facing policy sentences such as "agents must…" so offline drafts read as customer-facing.
 
 ## Phase 3: product and deployment

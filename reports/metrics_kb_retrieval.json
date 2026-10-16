@@ -1,0 +1,47 @@
+{
+  "queries": 40,
+  "unit": "KB section",
+  "reranker": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+  "results": {
+    "bm25": {
+      "recall@1": 0.375,
+      "recall@3": 0.625,
+      "recall@5": 0.725,
+      "mrr@5": 0.512,
+      "right_article_at_1": 0.5,
+      "ms_per_query": 0.6
+    },
+    "dense": {
+      "recall@1": 0.85,
+      "recall@3": 0.95,
+      "recall@5": 1.0,
+      "mrr@5": 0.903,
+      "right_article_at_1": 0.975,
+      "ms_per_query": 0.8
+    },
+    "hybrid": {
+      "recall@1": 0.6,
+      "recall@3": 0.9,
+      "recall@5": 0.95,
+      "mrr@5": 0.746,
+      "right_article_at_1": 0.75,
+      "ms_per_query": 1.0
+    },
+    "hybrid + rerank": {
+      "recall@1": 0.825,
+      "recall@3": 0.925,
+      "recall@5": 0.975,
+      "mrr@5": 0.877,
+      "right_article_at_1": 0.85,
+      "ms_per_query": 697.1
+    },
+    "dense + rerank": {
+      "recall@1": 0.85,
+      "recall@3": 0.925,
+      "recall@5": 0.975,
+      "mrr@5": 0.889,
+      "right_article_at_1": 0.875,
+      "ms_per_query": 504.0
+    }
+  }
+}

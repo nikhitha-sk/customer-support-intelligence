@@ -121,3 +121,9 @@ def test_customer_facing_drops_instructions_after_a_condition():
     from csi.genai import customer_facing
     assert customer_facing("If an incident is already open, link the customer's ticket to the parent incident.") is None
     assert customer_facing("For questions about compatibility, share the product data sheet.") is None
+
+
+def test_section_ranking_keeps_each_section_once():
+    from csi.rag.evaluate_kb import section_ranking
+    hits = [{"doc_id": "KB-1", "section": "A"}, {"doc_id": "KB-1", "section": "A"}, {"doc_id": "KB-2", "section": "B"}]
+    assert section_ranking(hits) == [("KB-1", "A"), ("KB-2", "B")]

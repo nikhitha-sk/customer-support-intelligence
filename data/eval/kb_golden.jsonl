@@ -1,0 +1,40 @@
+{"query": "Can I send back headphones I bought three weeks ago if I don't like them?", "doc_id": "KB-001", "section": "Return window"}
+{"query": "The blender arrived with a cracked jug, what are my options?", "doc_id": "KB-001", "section": "Damaged or defective items"}
+{"query": "I want to swap my order for the bigger model instead", "doc_id": "KB-001", "section": "Exchanges"}
+{"query": "I returned my item last week, when will the money be back on my card?", "doc_id": "KB-001", "section": "Refund timelines"}
+{"query": "Can I return a gift card I never used?", "doc_id": "KB-001", "section": "Exceptions"}
+{"query": "My bank statement shows the same subscription payment two times this month", "doc_id": "KB-002", "section": "Duplicate or incorrect charges"}
+{"query": "My card got declined when renewing, will my account be shut off?", "doc_id": "KB-002", "section": "Failed payments"}
+{"query": "Our company VAT number is wrong on the bill, how do we fix it?", "doc_id": "KB-002", "section": "Invoices and tax documents"}
+{"query": "If I move to a cheaper plan halfway through the month, when does it apply?", "doc_id": "KB-002", "section": "Plan changes and proration"}
+{"query": "Do you take PayPal or UPI?", "doc_id": "KB-002", "section": "Payment methods"}
+{"query": "I forgot my login password and the email link never shows up", "doc_id": "KB-003", "section": "Password reset"}
+{"query": "It says my account is locked after I typed the wrong password a few times", "doc_id": "KB-003", "section": "Account lockout"}
+{"query": "I got a new phone and lost my authenticator app codes", "doc_id": "KB-003", "section": "Two-factor authentication (2FA)"}
+{"query": "Our admin left the company, how do we make someone else the account owner?", "doc_id": "KB-003", "section": "Changing account owner or e-mail"}
+{"query": "Is your website down? Nothing loads for our whole team", "doc_id": "KB-004", "section": "Confirming an outage"}
+{"query": "How often will you update us while the service is broken?", "doc_id": "KB-004", "section": "Communicating during an outage"}
+{"query": "When do you usually do scheduled maintenance?", "doc_id": "KB-004", "section": "Planned maintenance"}
+{"query": "We had two days of downtime, do we get money back under our uptime agreement?", "doc_id": "KB-004", "section": "Service credits"}
+{"query": "Can we get a root cause report for last week's incident?", "doc_id": "KB-004", "section": "After the incident"}
+{"query": "We think someone broke into our systems last night", "doc_id": "KB-005", "section": "Immediate response"}
+{"query": "Several staff accounts were accessed without permission, what should we do right now to stop it?", "doc_id": "KB-005", "section": "Containment guidance"}
+{"query": "Customer data may have leaked, do you report this to the regulator?", "doc_id": "KB-005", "section": "Regulatory notification"}
+{"query": "I received a suspicious email pretending to be from you asking for my code", "doc_id": "KB-005", "section": "Phishing reports"}
+{"query": "The desktop app keeps closing by itself since yesterday's update", "doc_id": "KB-006", "section": "Crashes after updates"}
+{"query": "The software has become really sluggish and takes ages to open projects", "doc_id": "KB-006", "section": "Slow performance"}
+{"query": "Our API calls suddenly return 429 too many requests", "doc_id": "KB-006", "section": "Integration and API errors"}
+{"query": "My new smart plug won't pair with my wifi", "doc_id": "KB-007", "section": "Device setup"}
+{"query": "Does the thermostat work with Alexa or Apple Home?", "doc_id": "KB-007", "section": "Smart home integrations"}
+{"query": "How do I update the software on my camera, it seems stuck on an old version", "doc_id": "KB-007", "section": "Firmware updates"}
+{"query": "My laptop VPN keeps disconnecting when I work from a hotel", "doc_id": "KB-008", "section": "VPN connectivity"}
+{"query": "Outlook on my phone stopped syncing emails", "doc_id": "KB-008", "section": "E-mail and collaboration tools"}
+{"query": "My work laptop screen broke, how do I get a replacement?", "doc_id": "KB-008", "section": "Hardware requests and replacements"}
+{"query": "I need a program that is not in the company app store installed", "doc_id": "KB-008", "section": "Software installation and licences"}
+{"query": "We need a firewall rule opened for a new vendor", "doc_id": "KB-008", "section": "Network infrastructure changes"}
+{"query": "What does the Professional plan cost per year?", "doc_id": "KB-009", "section": "Plans and pricing"}
+{"query": "Can we try the product for free before buying?", "doc_id": "KB-009", "section": "Demos and trials"}
+{"query": "We are a university, is there any discount?", "doc_id": "KB-009", "section": "Volume and education discounts"}
+{"query": "Can you share your SOC 2 report for our vendor review?", "doc_id": "KB-009", "section": "Security and compliance questionnaires"}
+{"query": "My salary this month was less than it should be", "doc_id": "KB-010", "section": "HR requests"}
+{"query": "Please delete all the personal information you hold about me", "doc_id": "KB-010", "section": "Data and privacy requests"}
