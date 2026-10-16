@@ -186,6 +186,9 @@ The dashboard draws each theme on a **volume × urgency** chart. Themes in the t
   The offline fallback picks the best sentences from the help articles. Help articles are written for agents, so it first
   **removes agent-only instructions** ("Agents must…", "check the internal console") and **rewrites the rest for the customer**
   ("Ask the customer to restart the app" → "Please restart the app", "the customer is entitled" → "you are entitled").
+- **Feedback loop:** under each draft reply, the agent clicks 👍 or 👎 and can pick the correct team. Ratings are saved in a
+  `feedback` table in SQLite. Over time this gives us a **real evaluation set** made by people: how often drafts help, and
+  how often the router picked the wrong team. The Overview page shows these numbers.
 - **Responsible AI:** personal data is hidden, replies are checked against sources, and urgent or uncertain tickets go to a human.
 
 ---
@@ -237,6 +240,8 @@ pytest -q                                # run the tests
 | POST | `/v1/triage` | The full agent flow, including a draft reply |
 | POST | `/v1/summarize` | Summarise a long thread |
 | POST | `/v1/search` | Search help articles and similar solved tickets |
+| POST | `/v1/feedback` | Save an agent's 👍/👎 on a draft (use the `triage_id` from `/v1/triage`) |
+| GET | `/v1/feedback/summary` | Helpful rate and how often agents corrected the team |
 | GET | `/v1/insights/queues` | Ticket numbers per team (SQL) |
 | GET | `/v1/model/metrics` | Model test results |
 
@@ -290,6 +295,7 @@ What was built, in order. Each line matches a git commit.
 | 4 | FastAPI service, Streamlit dashboard, tests, Docker setup and docs |
 | 5 | README rewritten in simple English |
 | 6 | Offline replies now read like they are written to the customer (agent-only sentences removed) |
+| 7 | Feedback loop: agents rate drafts and fix wrong teams; saved in SQLite, shown in the dashboard and API |
 
 ---
 

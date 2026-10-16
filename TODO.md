@@ -25,7 +25,7 @@
 
 - [ ] Deploy a live demo on Hugging Face Spaces or Streamlit Community Cloud (baseline model and index fit in the free tier).
 - [ ] Record a 2-minute walkthrough video: business problem, live triage, themes matrix, model metrics.
-- [ ] Agent feedback loop: thumbs up/down on drafts stored in SQLite and used as an evaluation set.
+- [x] Agent feedback loop: thumbs up/down on drafts stored in SQLite and used as an evaluation set.
 - [ ] Time-series trend monitoring once real timestamps exist (the public dataset has none): weekly theme volumes and alerting.
 - [ ] Multilingual support (the dataset has 33k German tickets): multilingual MiniLM / XLM-R encoder.
 - [ ] Authentication and rate limiting on the API; CI workflow running `pytest` on every push.

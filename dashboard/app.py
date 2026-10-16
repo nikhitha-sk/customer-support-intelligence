@@ -14,6 +14,7 @@ import plotly.express as px
 import streamlit as st
 
 from csi import service
+from csi.config import settings
 
 st.set_page_config(page_title="Support Intelligence", page_icon="🎧", layout="wide")
 st.title("Customer Support Intelligence Platform")
@@ -73,6 +74,15 @@ with tab_overview:
     col2.plotly_chart(px.pie(types, names="type", values="tickets", hole=0.5, title="Ticket types"),
                       use_container_width=True)
 
+    fb = service.feedback_summary()
+    if fb["ratings"]:
+        st.subheader("Agent feedback on drafted replies")
+        f1, f2, f3 = st.columns(3)
+        f1.metric("Ratings", fb["ratings"])
+        f2.metric("Drafts rated helpful", f"{fb['helpful_rate']:.0%}")
+        f3.metric("Router agreement", f"{fb['router_agreement']:.0%}",
+                  f"{fb['queue_corrections']} queue corrections", delta_color="off")
+
     live = sql("SELECT * FROM triage_log ORDER BY id DESC LIMIT 200")
     if not live.empty:
         st.subheader("Recently triaged tickets (live log)")
@@ -109,7 +119,10 @@ with tab_triage:
     body = st.text_area("Ticket body", body0, height=140)
     if st.button("Triage ticket", type="primary") and len(body) >= 10:
         with st.spinner("Running agent workflow..."):
-            r = service.triage(subject, body, source="dashboard")
+            # kept in session state so the result survives the rerun triggered by the feedback form
+            st.session_state["triage"] = service.triage(subject, body, source="dashboard")
+    r = st.session_state.get("triage")
+    if r:
         c, u, plan = r["classification"], r["urgency"], r["action_plan"]
         m1, m2, m3, m4 = st.columns(4)
         m1.metric("Queue", c["queue"]["label"], f"{c['queue']['confidence']:.0%} confidence", delta_color="off")
@@ -138,6 +151,17 @@ with tab_triage:
                     st.write(t["answer"])
         st.subheader("Agent trace")
         st.dataframe(pd.DataFrame(r["trace"]), use_container_width=True, hide_index=True)
+
+        st.subheader("Was this helpful?")
+        with st.form(f"feedback-{r['triage_id']}", clear_on_submit=True):
+            rating = st.radio("Draft reply", ["👍 Helpful", "👎 Not helpful"], horizontal=True)
+            queues = list(settings.queues)
+            right_queue = st.selectbox("Correct queue", queues, index=queues.index(c["queue"]["label"]))
+            comment = st.text_input("Comment (optional)")
+            if st.form_submit_button("Send feedback"):
+                service.record_feedback(r["triage_id"], rating.startswith("👍"), right_queue, comment,
+                                        r["draft"]["provider"])
+                st.success("Thanks! Feedback saved and added to the evaluation set.")
 
 # ---------------------------------------------------------------- Batch triage
 with tab_batch:

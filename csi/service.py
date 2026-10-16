@@ -27,25 +27,40 @@ LOG_SCHEMA = """CREATE TABLE IF NOT EXISTS triage_log (
     topic INTEGER, topic_label TEXT, routing TEXT, groundedness REAL, latency_ms INTEGER
 )"""
 
+# Agent feedback on drafted replies. Over time this becomes a labelled evaluation set:
+# "helpful" ratings for the reply generator and corrected queues for the router.
+FEEDBACK_SCHEMA = """CREATE TABLE IF NOT EXISTS feedback (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    created_at TEXT, triage_id INTEGER, helpful INTEGER, predicted_queue TEXT,
+    corrected_queue TEXT, provider TEXT, groundedness REAL, comment TEXT
+)"""
+
 
 def _db() -> sqlite3.Connection:
     settings.paths.artifacts.mkdir(parents=True, exist_ok=True)
     con = sqlite3.connect(settings.paths.warehouse)
     con.execute(LOG_SCHEMA)
+    con.execute(FEEDBACK_SCHEMA)
     return con
 
 
-def log_rows(rows: list[dict]) -> None:
+def _now() -> str:
+    return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+def log_rows(rows: list[dict]) -> list[int]:
+    """Store triaged tickets and return their triage_log ids (used to attach feedback later)."""
     if not rows:
-        return
+        return []
     con = _db()
     cols = ["received_at", "source", "subject", "text", "queue", "queue_confidence", "priority", "type",
             "sentiment", "sentiment_score", "urgency", "tier", "topic", "topic_label", "routing",
             "groundedness", "latency_ms"]
-    con.executemany(f"INSERT INTO triage_log ({', '.join(cols)}) VALUES ({', '.join('?' * len(cols))})",
-                    [[r.get(c) for c in cols] for r in rows])
+    sql = f"INSERT INTO triage_log ({', '.join(cols)}) VALUES ({', '.join('?' * len(cols))})"
+    ids = [con.execute(sql, [r.get(c) for c in cols]).lastrowid for r in rows]
     con.commit()
     con.close()
+    return ids
 
 
 def query(sql: str, params: tuple = ()) -> pd.DataFrame:
@@ -65,7 +80,7 @@ def classify_batch(tickets: list[dict], source: str = "batch", log: bool = True)
         preds += get_classifier().predict(texts[i:i + 32])
         sents += get_sentiment().score(texts[i:i + 32])
     topics = get_topic_model().assign(vectors=embed(texts))
-    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    now = _now()
     per_ticket_ms = round((time.time() - start) * 1000 / max(1, len(texts)))
 
     results = []
@@ -94,16 +109,57 @@ def triage(subject: str | None, body: str, source: str = "api") -> dict:
     c, u, s = result["classification"], result["urgency"], result["sentiment"]
     tp = get_topic_model().assign([result["text"]])[0]
     result["topic"] = tp
-    log_rows([{
-        "received_at": datetime.now(timezone.utc).isoformat(timespec="seconds"), "source": source,
+    result["triage_id"] = log_rows([{
+        "received_at": _now(), "source": source,
         "subject": subject or "", "text": result["text"], "queue": c["queue"]["label"],
         "queue_confidence": c["queue"]["confidence"], "priority": c["priority"]["label"],
         "type": c["type"]["label"], "sentiment": s["label"], "sentiment_score": s["score"],
         "urgency": u["score"], "tier": u["tier"], "topic": tp["topic"], "topic_label": tp["label"],
         "routing": result["routing"]["decision"], "groundedness": result["guardrail"]["groundedness"],
         "latency_ms": result["total_ms"],
-    }])
+    }])[0]
     return result
+
+
+def record_feedback(triage_id: int, helpful: bool, corrected_queue: str | None = None,
+                    comment: str = "", provider: str | None = None) -> int:
+    """Save an agent's rating of a drafted reply. Raises KeyError if the triage id does not exist."""
+    con = _db()
+    try:
+        row = con.execute("SELECT queue, groundedness FROM triage_log WHERE id = ?", (triage_id,)).fetchone()
+        if row is None:
+            raise KeyError(triage_id)
+        fid = con.execute(
+            "INSERT INTO feedback (created_at, triage_id, helpful, predicted_queue, corrected_queue, provider, "
+            "groundedness, comment) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (_now(), triage_id, int(helpful), row[0], corrected_queue or None, provider, row[1],
+             redact_pii(comment or "")[:1000]),
+        ).lastrowid
+        con.commit()
+        return fid
+    finally:
+        con.close()
+
+
+def feedback_summary() -> dict:
+    """Headline numbers for the feedback loop: how often drafts help and how often agents fix the queue."""
+    df = query("SELECT * FROM feedback")
+    if df.empty:
+        return {"ratings": 0}
+    corrected = df["corrected_queue"].notna() & (df["corrected_queue"] != df["predicted_queue"])
+    return {
+        "ratings": int(len(df)),
+        "helpful_rate": round(float(df["helpful"].mean()), 3),
+        "queue_corrections": int(corrected.sum()),
+        "router_agreement": round(float(1 - corrected.mean()), 3),
+        "avg_groundedness_helpful": _mean(df.loc[df.helpful == 1, "groundedness"]),
+        "avg_groundedness_not_helpful": _mean(df.loc[df.helpful == 0, "groundedness"]),
+    }
+
+
+def _mean(s: pd.Series) -> float | None:
+    s = s.dropna()
+    return round(float(s.mean()), 3) if len(s) else None
 
 
 def search(query_text: str, k: int = 4) -> dict:

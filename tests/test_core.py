@@ -85,3 +85,28 @@ def test_customer_facing_rewrites_to_second_person():
     assert customer_facing("Customers can reset their password.") == "You can reset your password."
     assert customer_facing("Refunds are issued to the original payment method.") == \
         "Refunds are issued to the original payment method."
+
+
+def test_feedback_loop_roundtrip(tmp_path, monkeypatch):
+    import dataclasses
+
+    import pytest
+
+    from csi import service
+    from csi.config import Paths, settings
+
+    paths = Paths(artifacts=tmp_path, warehouse=tmp_path / "test.db")
+    monkeypatch.setattr(service, "settings", dataclasses.replace(settings, paths=paths))
+
+    ids = service.log_rows([{"queue": "IT Support", "groundedness": 0.9},
+                            {"queue": "Billing and Payments", "groundedness": 0.4}])
+    assert ids == [1, 2]
+    service.record_feedback(ids[0], helpful=True, corrected_queue="IT Support")
+    service.record_feedback(ids[1], helpful=False, corrected_queue="Customer Service", comment="mail me a@b.com")
+    s = service.feedback_summary()
+    assert s["ratings"] == 2 and s["helpful_rate"] == 0.5
+    assert s["queue_corrections"] == 1 and s["router_agreement"] == 0.5
+    assert s["avg_groundedness_helpful"] == 0.9
+    assert "a@b.com" not in service.query("SELECT comment FROM feedback")["comment"].iloc[1]
+    with pytest.raises(KeyError):
+        service.record_feedback(999, helpful=True)

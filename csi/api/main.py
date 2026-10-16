@@ -10,6 +10,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 
 from csi import service
+from csi.config import settings
 from csi.llm import get_llm
 from csi.models.predictor import get_classifier
 
@@ -38,6 +39,14 @@ class TextRequest(BaseModel):
 class SearchRequest(BaseModel):
     query: str = Field(min_length=3, max_length=2000)
     k: int = Field(default=4, ge=1, le=10)
+
+
+class Feedback(BaseModel):
+    triage_id: int = Field(description="The `triage_id` returned by /v1/triage")
+    helpful: bool
+    corrected_queue: str | None = Field(default=None, description="The right queue, if the prediction was wrong")
+    comment: str = Field(default="", max_length=1000)
+    provider: str | None = Field(default=None, description="LLM provider that wrote the draft")
 
 
 @app.get("/health")
@@ -77,6 +86,23 @@ def summarize(req: TextRequest) -> dict:
 @app.post("/v1/search")
 def search(req: SearchRequest) -> dict:
     return service.search(req.query, req.k)
+
+
+@app.post("/v1/feedback", status_code=201)
+def feedback(fb: Feedback) -> dict:
+    """Agent rating of a drafted reply (and the right queue if routing was wrong)."""
+    if fb.corrected_queue and fb.corrected_queue not in settings.queues:
+        raise HTTPException(422, f"Unknown queue '{fb.corrected_queue}'")
+    try:
+        fid = service.record_feedback(fb.triage_id, fb.helpful, fb.corrected_queue, fb.comment, fb.provider)
+    except KeyError:
+        raise HTTPException(404, f"No triaged ticket with id {fb.triage_id}")
+    return {"feedback_id": fid}
+
+
+@app.get("/v1/feedback/summary")
+def feedback_summary() -> dict:
+    return service.feedback_summary()
 
 
 @app.get("/v1/insights/queues")
