@@ -298,6 +298,20 @@ tests/                 unit tests (core logic + API)
 .github/workflows/     CI: runs the tests on every push
 ```
 
+### How to read the code (suggested order for learning)
+
+If you are new to the project, read the files in this order. Each step builds on the one before.
+
+1. `csi/config.py`: all the settings in one place.
+2. `csi/data/pipeline.py`: how raw tickets become clean data.
+3. `csi/models/baseline.py`, then `csi/models/multitask.py` and `csi/models/train.py`: the simple model first, then the transformer.
+4. `csi/nlp/urgency.py`: a short, readable example of an explainable score.
+5. `csi/rag/chunking.py` → `csi/rag/retriever.py`: how search works.
+6. `csi/genai.py`: how replies are written and checked.
+7. `csi/agent.py`: how all the steps are joined into one flow.
+8. `csi/service.py` → `csi/api/main.py` → `dashboard/app.py`: how it is served to users.
+9. `tests/`: small examples of how each piece is expected to behave.
+
 ---
 
 ## Tech stack
