@@ -77,7 +77,7 @@ Step by step:
 
    The score maps to an SLA tier: **P1** (reply within 1 hour) to **P4** (3 business days). The system also lists the reasons, so a person can see *why*.
 4. **Route or escalate.** If urgency is 80 or more, a human lead reviews the ticket. If the model is at least 60% sure about the team, the ticket goes there automatically. If it is unsure which *technical* team, but sure the ticket is technical, it goes to the shared technical group. Otherwise a person decides, with the model's guess already filled in.
-5. **Search.** Find the most useful help-article sections (meaning-based search, chosen by a test, see results 3b) and the most similar *solved* tickets.
+5. **Search.** Find the most useful help-article sections (meaning-based search, chosen by a test, see result 6) and the most similar *solved* tickets.
 6. **Draft a reply.** An AI model (LLM) writes a short reply using **only** the search results, and cites them like `[KB-002#0]`.
 7. **Safety check (guardrail).** Check that every sentence is supported by a source, that the citations are real, and that no personal data leaks. If the check fails, the AI tries again in a stricter mode.
 8. **Finish.** Return an action plan: which team, which SLA, and whether the reply needs a human review.
@@ -140,6 +140,14 @@ This flow is built with **LangGraph** (`csi/agent.py`). The dashboard shows ever
 
 ## Results
 
+### Results at a glance
+
+- **Routing:** the simple TF-IDF model gets the team right **61%** of the time (macro F1 0.60). It beats DistilBERT, which was only trained for 2 epochs on a CPU, so the app uses TF-IDF.
+- **Honest warning:** half of the test tickets are near-copies of training tickets. On truly new tickets, accuracy is about **45%**.
+- **Group routing** more than doubles the tickets that skip manual sorting (**28% → 61%**) with almost the same correctness.
+- **Help-article search:** meaning-based (dense) search finds the right section first **85%** of the time on a hand-labelled test.
+- **Urgency score:** P1 tickets are marked "high" by humans **81%** of the time, P4 tickets only 17%.
+
 ### 1. Sending tickets to the right team (test set, 2,370 tickets)
 
 | Model | Task | Accuracy | Macro F1 | Weighted F1 |
@@ -165,7 +173,7 @@ This flow is built with **LangGraph** (`csi/agent.py`). The dashboard shows ever
 
 On **truly new tickets** the two models are only 4 points apart. Because the baseline scores better overall, **the app keeps using the baseline** (see `CSI_CLASSIFIER=auto` below). Retraining DistilBERT for more epochs on a GPU is the next step.
 
-### Confidence calibration (DistilBERT)
+### 2. Is the model's confidence honest? (calibration, DistilBERT)
 
 A model's confidence should be honest: when it says "70% sure", it should be right about 70% of the time. We measure this with **ECE** (expected calibration error: the average gap between confidence and real accuracy; lower is better). `python -m csi.models.calibrate` learns one number per task, the **temperature**, on the validation set, and checks the result on the test set:
 
@@ -177,16 +185,16 @@ A model's confidence should be honest: when it says "70% sure", it should be rig
 
 A temperature below 1 means the model was **under-confident** (usually it is the other way round). Calibration does not change which label is predicted, only how sure the model says it is. This matters for auto-routing, because the 60% confidence limit only works if "60%" really means 60%. The temperatures are saved next to the model and used automatically.
 
-### What the model gets wrong (error analysis)
+### 3. What the model gets wrong (error analysis)
 
 `python -m csi.models.error_analysis` writes [`reports/error_analysis.json`](reports/error_analysis.json). The main findings (baseline model):
 
 - **Most mistakes are between teams that sound alike.** The top mix-ups are Technical Support ↔ Product Support, Product Support → Customer Service and Technical Support ↔ IT Support. **35%** of all mistakes happen *inside* the group Technical / IT / Product Support.
-- **Grouping helps a lot.** If we first route to a "Technical (group)" and let that group pick the exact team, accuracy goes from **61% to 75%** (8 classes instead of 10). This is a good design for real use: send the ticket to the technical group automatically, and let them pick the exact team.
+- **Grouping helps a lot.** If we first route to a "Technical (group)" and let that group pick the exact team, accuracy goes from **61% to 75%** (8 classes instead of 10). We built this into the app, see result 4.
 - **The labels are mostly clean.** About half of the training tickets have an almost identical twin (similarity ≥ 0.95), and only **1%** of those twins have a different team label. So the mix-ups come from teams that really overlap, not from wrong labels.
 - **Honest warning: near-copies make the score look better.** About **50% of test tickets have a near-copy in the training data**. The model gets **78%** of those right, but only **45%** of truly new tickets. Expect real-world accuracy closer to the "new tickets" number.
 
-### 2. Auto-routing: only trust the model when it is confident
+### 4. Auto-routing: only trust the model when it is confident
 
 We don't have to auto-route every ticket. We can auto-route only the ones where the model is sure, and send the rest to a person.
 
@@ -214,7 +222,7 @@ The error analysis showed that most mistakes are between Technical, IT and Produ
 
 `python -m csi.models.error_analysis` checks both models. DistilBERT is tested exactly as the app would run it: compressed to 8-bit numbers (INT8) for speed, which costs about 1.6 points of accuracy (44.7% → 43.1%).
 
-### 3. Finding similar solved tickets (300 test searches over 18,952 tickets)
+### 5. Finding similar solved tickets (300 test searches over 18,952 tickets)
 
 | Search method | Precision@5 | MRR@5 |
 |---|---|---|
@@ -224,9 +232,9 @@ The error analysis showed that most mistakes are between Technical, IT and Produ
 
 A result counts as "relevant" if that past ticket was handled by the same team.
 
-### 3b. Finding the right help article (hand-labelled test, 40 questions)
+### 6. Finding the right help article (hand-labelled test, 40 questions)
 
-The test above uses a rough stand-in for "relevant" (same team). So we also wrote **40 real-sounding customer questions** and labelled, by hand, the one help-article section that answers each ([`data/eval/kb_golden.jsonl`](data/eval/kb_golden.jsonl)). The questions use everyday words, not the article's words, the way real customers write. Run it with `python -m csi.rag.evaluate_kb`.
+Result 5 uses a rough stand-in for "relevant" (same team). So we also wrote **40 real-sounding customer questions** and labelled, by hand, the one help-article section that answers each ([`data/eval/kb_golden.jsonl`](data/eval/kb_golden.jsonl)). The questions use everyday words, not the article's words, the way real customers write. Run it with `python -m csi.rag.evaluate_kb`.
 
 | Search method | Right section is #1 | Right section in top 3 | MRR@5 | Time per question |
 |---|---|---|---|---|
@@ -240,7 +248,7 @@ The test above uses a rough stand-in for "relevant" (same team). So we also wrot
 
 *Note:* 40 questions is a small test, and keyword search would do better on exact error codes or product names. It is still much better evidence than guessing.
 
-### 3c. Customer sentiment across all tickets
+### 7. Customer tone (sentiment) across all tickets
 
 `python -m csi.nlp.sentiment` scores the tone of all 23,695 tickets once (~26 min on CPU) and saves it in the SQLite `tickets` table, so the dashboard can show it by team and by theme.
 
@@ -250,7 +258,7 @@ The test above uses a rough stand-in for "relevant" (same team). So we also wrot
 | Neutral | 28% | 35% |
 | Positive | 18% | 34% |
 
-### 3d. Does the urgency score agree with people?
+### 8. Does the urgency score agree with people?
 
 `python -m csi.nlp.validate_urgency` compares our 0-100 urgency score with the human "high priority" labels on the test set ([`reports/metrics_urgency.json`](reports/metrics_urgency.json)). We use **AUROC**: 0.5 means random, 1.0 means every human-"high" ticket gets a higher score than every other ticket.
 
@@ -276,7 +284,7 @@ The SLA tiers line up well with the human labels:
 - Tone and risk words **do not** help to match the human labels; the model alone matches them a bit better (0.82). Some risk words are strong signals on their own: tickets that mention an **outage** are "high" 72% of the time (38% without), and **data loss** 71%. But tickets about **cancelling or switching to a competitor** are almost never labelled "high" (8%).
 - We **kept** tone and risk words in the score on purpose. Their job is to catch business risks (security, churn, money) that past labels may not show, and to explain the score in plain words. Lowering their weight is a product decision; the numbers for that are in the report.
 
-### 4. Common complaint themes
+### 9. Common complaint themes
 
 We found **20 themes** (the number was picked with the silhouette score). Examples: *service / outage / server* (65% high priority), *security / breach / unauthorized access*, *billing / payment / discrepancies*, *crashes / software / login*.
 
@@ -319,17 +327,20 @@ cp .env.example .env               # optional: add a GROQ_API_KEY, or run Ollama
 **2. Build the data, models and search indexes** (run these once, in this order)
 
 ```bash
-python -m csi.data.pipeline        # download + clean data, fill SQLite     (~1 min)
-python -m csi.models.baseline      # train TF-IDF baselines                  (~5 min)
-python -m csi.rag.build_index      # build search indexes                    (~5 min)
-python -m csi.nlp.topics           # find complaint themes                   (~1 min)
-python -m csi.rag.evaluate         # test the search quality                 (~1 min)
-python -m csi.rag.evaluate_kb      # test help-article search (golden set)   (~1 min)
-python -m csi.nlp.sentiment        # tone of every ticket, saved to SQLite   (~30 min)
-python -m csi.nlp.validate_urgency # check urgency score vs human labels     (~1 min)
-python -m csi.models.error_analysis # mistakes, label noise, leakage         (~2 min)
-python -m csi.models.train --epochs 2   # train DistilBERT (~1 h 40 min on CPU, ~10 min on a GPU)
-python -m csi.models.calibrate          # calibrate DistilBERT's confidence     (~2 min)
+python -m csi.data.pipeline          # download + clean data, fill SQLite        (~1 min)
+python -m csi.models.baseline        # train TF-IDF baselines                     (~5 min)
+python -m csi.rag.build_index        # build search indexes                       (~5 min)
+python -m csi.nlp.topics             # find complaint themes                      (~1 min)
+python -m csi.nlp.sentiment          # tone of every ticket, saved to SQLite      (~30 min)
+python -m csi.models.train --epochs 2   # optional: DistilBERT (~1 h 40 min on CPU, ~10 min on a GPU)
+python -m csi.models.calibrate          # optional: calibrate DistilBERT           (~2 min)
+
+# tests of quality (each writes a report to reports/)
+python -m csi.rag.evaluate           # similar-ticket search                      (~1 min)
+python -m csi.rag.evaluate_kb        # help-article search (golden set)           (~1 min)
+python -m csi.nlp.validate_urgency   # urgency score vs human labels              (~1 min)
+python -m csi.models.error_analysis  # mistakes, label noise, leakage, routing    (~2 min)
+python -m csi.eval_replies --n 20    # reply quality per LLM provider            (~1 min offline, ~30 min with Ollama on CPU)
 ```
 
 You can skip the DistilBERT step. The app then uses the TF-IDF baseline.
@@ -346,7 +357,7 @@ pytest -q                                # run the tests
 
 The tests also run automatically on GitHub (GitHub Actions) every time code is pushed. See `.github/workflows/tests.yml`.
 
-**Docker:** after step 2 (so the `artifacts/` folder exists), run `docker compose up --build`. The API runs on port 8000 and the dashboard on port 8501.
+**Docker:** after step 2 (so the `artifacts/` folder exists), run `docker compose up --build`. The API runs on port 8000 and the dashboard on port 8501. *(The Docker setup has not been tested yet, see TODO.md.)*
 
 ---
 
@@ -429,7 +440,7 @@ Python, pandas, scikit-learn, PyTorch, Hugging Face Transformers (DistilBERT, Ro
 
 ## Progress log
 
-What was built, in order. Each line matches a git commit.
+What was built, in order. Each line is one step of work (`git log` shows every commit).
 
 | # | What was added |
 |---|---|
