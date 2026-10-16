@@ -157,6 +157,7 @@ def load_warehouse(df: pd.DataFrame) -> None:
     con = sqlite3.connect(settings.paths.warehouse)
     out = df.drop(columns=["tags"]).assign(tags=df["tags"].map(lambda t: ", ".join(t)))
     out.to_sql("tickets", con, if_exists="replace", index=False)
+    con.execute("CREATE INDEX IF NOT EXISTS ix_tickets_id ON tickets(ticket_id)")
     con.execute("CREATE INDEX IF NOT EXISTS ix_tickets_queue ON tickets(queue)")
     con.execute("CREATE INDEX IF NOT EXISTS ix_tickets_split ON tickets(split)")
     con.commit()

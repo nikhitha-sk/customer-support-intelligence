@@ -1,0 +1,145 @@
+{
+  "classifier_backend": "tfidf-logreg",
+  "test_tickets": 2370,
+  "human_high_rate": 0.3928,
+  "auroc_vs_human_high_priority": {
+    "urgency_score": 0.787,
+    "model_component_only": 0.817,
+    "sentiment_component_only": 0.5664,
+    "keywords_component_only": 0.5524
+  },
+  "tiers": [
+    {
+      "tier": "P4",
+      "first_response_sla": "3 business days",
+      "share_of_tickets": 0.3852,
+      "human_high_rate": 0.1742
+    },
+    {
+      "tier": "P3",
+      "first_response_sla": "1 business day",
+      "share_of_tickets": 0.3544,
+      "human_high_rate": 0.3667
+    },
+    {
+      "tier": "P2",
+      "first_response_sla": "4 hours",
+      "share_of_tickets": 0.2,
+      "human_high_rate": 0.7342
+    },
+    {
+      "tier": "P1",
+      "first_response_sla": "1 hour",
+      "share_of_tickets": 0.0603,
+      "human_high_rate": 0.8112
+    }
+  ],
+  "weight_search": {
+    "grid": [
+      {
+        "w_model": 1.0,
+        "w_sentiment": 0,
+        "w_keywords": 0,
+        "val_auroc": 0.8265
+      },
+      {
+        "w_model": 1.0,
+        "w_sentiment": 0,
+        "w_keywords": 0.5,
+        "val_auroc": 0.8227
+      },
+      {
+        "w_model": 1.0,
+        "w_sentiment": 0,
+        "w_keywords": 1,
+        "val_auroc": 0.8137
+      },
+      {
+        "w_model": 1.0,
+        "w_sentiment": 0,
+        "w_keywords": 2,
+        "val_auroc": 0.7921
+      },
+      {
+        "w_model": 1.0,
+        "w_sentiment": 0.5,
+        "w_keywords": 0,
+        "val_auroc": 0.821
+      },
+      {
+        "w_model": 1.0,
+        "w_sentiment": 0.5,
+        "w_keywords": 0.5,
+        "val_auroc": 0.8164
+      },
+      {
+        "w_model": 1.0,
+        "w_sentiment": 0.5,
+        "w_keywords": 1,
+        "val_auroc": 0.8076
+      },
+      {
+        "w_model": 1.0,
+        "w_sentiment": 0.5,
+        "w_keywords": 2,
+        "val_auroc": 0.7874
+      },
+      {
+        "w_model": 1.0,
+        "w_sentiment": 1,
+        "w_keywords": 0,
+        "val_auroc": 0.8097
+      },
+      {
+        "w_model": 1.0,
+        "w_sentiment": 1,
+        "w_keywords": 0.5,
+        "val_auroc": 0.805
+      },
+      {
+        "w_model": 1.0,
+        "w_sentiment": 1,
+        "w_keywords": 1,
+        "val_auroc": 0.7969
+      },
+      {
+        "w_model": 1.0,
+        "w_sentiment": 1,
+        "w_keywords": 2,
+        "val_auroc": 0.7787
+      },
+      {
+        "w_model": 1.0,
+        "w_sentiment": 2,
+        "w_keywords": 0,
+        "val_auroc": 0.7776
+      },
+      {
+        "w_model": 1.0,
+        "w_sentiment": 2,
+        "w_keywords": 0.5,
+        "val_auroc": 0.7743
+      },
+      {
+        "w_model": 1.0,
+        "w_sentiment": 2,
+        "w_keywords": 1,
+        "val_auroc": 0.7683
+      },
+      {
+        "w_model": 1.0,
+        "w_sentiment": 2,
+        "w_keywords": 2,
+        "val_auroc": 0.7542
+      }
+    ],
+    "best_on_val": {
+      "w_model": 1.0,
+      "w_sentiment": 0,
+      "w_keywords": 0,
+      "val_auroc": 0.8265
+    },
+    "test_auroc_with_best": 0.817,
+    "test_auroc_with_default": 0.787
+  }
+}

@@ -8,7 +8,7 @@
   - Fastest route: open the repo in Colab, `pip install -r requirements.txt`, run `python -m csi.data.pipeline` then `python -m csi.models.train --epochs 3`, and download `artifacts/models/multitask_distilbert/` and `reports/metrics_distilbert.json`.
   - Once the model folder exists, the API and dashboard use it automatically (INT8 dynamic quantisation for CPU serving).
   - Then update the README results table (DistilBERT vs baseline, macro F1 per task) and the coverage-precision table.
-- [ ] **Pre-compute sentiment for all 23.7k tickets** so the Overview tab can show sentiment by queue and theme (RoBERTa on CPU takes ~20 min). Store it as a `sentiment` column in the `tickets` SQLite table.
+- [x] **Pre-compute sentiment for all 23.7k tickets** so the Overview tab can show sentiment by queue and theme (RoBERTa on CPU takes ~20 min). Store it as a `sentiment` column in the `tickets` SQLite table.
 - [ ] **Build and test the Docker images** (`docker compose up --build`). Docker Desktop was not running during development.
 - [ ] **Benchmark LLM reply quality** with Groq/Ollama on ~50 test tickets: groundedness, citation validity and latency per provider. Local `gemma2:9b` on CPU takes ~30-60 s per reply.
 
@@ -18,7 +18,9 @@
 - [x] Probability calibration (temperature scaling) so confidence thresholds for auto-routing are reliable.
 - [x] Label-noise audit: inspect the confusion between Technical Support, IT Support and Product Support, and consider merging or hierarchical routing.
 - [x] Error analysis with misclassified examples per queue (`csi/models/error_analysis.py`, a script instead of a notebook).
-- [ ] Urgency score validation: report AUROC against human "high" priority labels and tune the component weights.
+- [x] Urgency score validation: report AUROC against human "high" priority labels and tune the component weights.
+- [ ] Decide on urgency weights: per-keyword weights (raise outage / data loss) and whether churn words should
+  escalate, using `reports/metrics_urgency.json`.
 - [x] Cross-encoder re-ranker on top of hybrid retrieval, and a labelled golden set for KB retrieval (Recall@k). Result: dense search wins; re-ranker kept as an option.
 - [x] Better offline reply fallback: filter out agent-facing policy sentences such as "agents must…" so offline drafts read as customer-facing.
 

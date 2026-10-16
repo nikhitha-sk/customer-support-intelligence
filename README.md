@@ -113,6 +113,7 @@ This flow is built with **LangGraph** (`csi/agent.py`). The dashboard shows ever
 | **Macro F1** | The average score over all classes, where every class counts the same. Good for **imbalanced** data, because small teams are not ignored. |
 | **Precision@5** | Of the top 5 search results, how many are relevant. |
 | **MRR** | How high the first relevant result appears (1.0 = always first). |
+| **AUROC** | A score for ranking: 0.5 = random guessing, 1.0 = perfect. |
 | **SLA** | Service Level Agreement: how fast we promise to reply. |
 
 ---
@@ -237,6 +238,42 @@ The test above uses a rough stand-in for "relevant" (same team). So we also wrot
 
 *Note:* 40 questions is a small test, and keyword search would do better on exact error codes or product names. It is still much better evidence than guessing.
 
+### 3c. Customer sentiment across all tickets
+
+`python -m csi.nlp.sentiment` scores the tone of all 23,695 tickets once (~26 min on CPU) and saves it in the SQLite `tickets` table, so the dashboard can show it by team and by theme.
+
+| Tone | Share of tickets | Share marked "high" priority by humans |
+|---|---|---|
+| Negative | 55% | 42% |
+| Neutral | 28% | 35% |
+| Positive | 18% | 34% |
+
+### 3d. Does the urgency score agree with people?
+
+`python -m csi.nlp.validate_urgency` compares our 0-100 urgency score with the human "high priority" labels on the test set ([`reports/metrics_urgency.json`](reports/metrics_urgency.json)). We use **AUROC**: 0.5 means random, 1.0 means every human-"high" ticket gets a higher score than every other ticket.
+
+| What is scored | AUROC |
+|---|---|
+| Full urgency score | **0.79** |
+| Model's priority prediction only | 0.82 |
+| Customer tone (sentiment) only | 0.57 |
+| Risk words only | 0.55 |
+
+The SLA tiers line up well with the human labels:
+
+| Tier | Reply within | Share of tickets | Of these, marked "high" by humans |
+|---|---|---|---|
+| P1 | 1 hour | 6% | **81%** |
+| P2 | 4 hours | 20% | 73% |
+| P3 | 1 business day | 35% | 37% |
+| P4 | 3 business days | 39% | 17% |
+
+**What this means:**
+
+- The score works: the higher the tier, the more often humans agree it is urgent.
+- Tone and risk words **do not** help to match the human labels; the model alone matches them a bit better (0.82). Some risk words are strong signals on their own: tickets that mention an **outage** are "high" 72% of the time (38% without), and **data loss** 71%. But tickets about **cancelling or switching to a competitor** are almost never labelled "high" (8%).
+- We **kept** tone and risk words in the score on purpose. Their job is to catch business risks (security, churn, money) that past labels may not show, and to explain the score in plain words. Lowering their weight is a product decision; the numbers for that are in the report.
+
 ### 4. Common complaint themes
 
 We found **20 themes** (the number was picked with the silhouette score). Examples: *service / outage / server* (65% high priority), *security / breach / unauthorized access*, *billing / payment / discrepancies*, *crashes / software / login*.
@@ -286,6 +323,9 @@ python -m csi.rag.build_index      # build search indexes                    (~5
 python -m csi.nlp.topics           # find complaint themes                   (~1 min)
 python -m csi.rag.evaluate         # test the search quality                 (~1 min)
 python -m csi.rag.evaluate_kb      # test help-article search (golden set)   (~1 min)
+python -m csi.nlp.sentiment        # tone of every ticket, saved to SQLite   (~30 min)
+python -m csi.nlp.validate_urgency # check urgency score vs human labels     (~1 min)
+python -m csi.models.error_analysis # mistakes, label noise, leakage         (~2 min)
 python -m csi.models.train --epochs 2   # train DistilBERT (~1 h 40 min on CPU, ~10 min on a GPU)
 python -m csi.models.calibrate          # calibrate DistilBERT's confidence     (~2 min)
 ```
@@ -405,6 +445,7 @@ What was built, in order. Each line matches a git commit.
 | 12 | Group routing: unsure technical tickets go to a shared technical group (auto-routing 28% → 61%) |
 | 13 | The app automatically serves whichever classifier scored better on the test set |
 | 14 | DistilBERT trained (2 epochs on CPU) and calibrated; results and an honest comparison added |
+| 15 | Sentiment for every ticket saved in SQLite; urgency score checked against human labels |
 
 ---
 
