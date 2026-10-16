@@ -108,6 +108,8 @@ This flow is built with **LangGraph** (`csi/agent.py`). The dashboard shows ever
 | **LLM** | Large Language Model, the AI that writes the reply (Groq-hosted Llama, or Gemma running locally with Ollama). |
 | **Guardrail** | An automatic check that stops bad output (unsupported claims, fake citations, personal data). |
 | **Accuracy** | Share of predictions that are correct. |
+| **Epoch** | One full pass of the model over all training tickets. |
+| **Calibration** | Making the model's confidence match how often it is really right. |
 | **Macro F1** | The average score over all classes, where every class counts the same. Good for **imbalanced** data, because small teams are not ignored. |
 | **Precision@5** | Of the top 5 search results, how many are relevant. |
 | **MRR** | How high the first relevant result appears (1.0 = always first). |
@@ -144,9 +146,35 @@ This flow is built with **LangGraph** (`csi/agent.py`). The dashboard shows ever
 | TF-IDF + LogReg | Team (10 classes) | 0.612 | 0.601 | 0.613 |
 | TF-IDF + LogReg | Priority (3 classes) | 0.676 | 0.665 | 0.677 |
 | TF-IDF + LogReg | Type (4 classes) | 0.880 | 0.884 | 0.881 |
-| Multi-task DistilBERT | all three | *training in progress* | | |
+| Multi-task DistilBERT (2 epochs, CPU) | Team | 0.447 | 0.384 | 0.439 |
+| Multi-task DistilBERT (2 epochs, CPU) | Priority | 0.543 | 0.525 | 0.541 |
+| Multi-task DistilBERT (2 epochs, CPU) | Type | 0.821 | 0.829 | 0.823 |
 
 **What this means:** some team names overlap a lot (for example "Technical Support", "IT Support" and "Product Support"). Even a person would mix them up, so about 60% is a fair starting point.
+
+**Why did the bigger model (DistilBERT) lose?** We trained it for 2 epochs on a laptop CPU (about 1 hour 40 minutes). Two things explain the gap:
+
+1. **It was not finished learning.** Its training loss was still going down at the end (3.17 → 2.66), and the validation score was still rising (team macro F1 0.37 → 0.42). It needs more epochs, ideally on a GPU.
+2. **The baseline is very good at spotting near-copies.** About half of the test tickets are near-copies of training tickets (see the error analysis below). TF-IDF looks at exact words and letter patterns, so it recognises these almost-identical tickets very well:
+
+| Model | Near-copies of training tickets | Truly new tickets |
+|---|---|---|
+| TF-IDF + LogReg | **78%** correct | 45% correct |
+| DistilBERT | 49% correct | 41% correct |
+
+On **truly new tickets** the two models are only 4 points apart. Because the baseline scores better overall, **the app keeps using the baseline** (see `CSI_CLASSIFIER=auto` below). Retraining DistilBERT for more epochs on a GPU is the next step.
+
+### Confidence calibration (DistilBERT)
+
+A model's confidence should be honest: when it says "70% sure", it should be right about 70% of the time. We measure this with **ECE** (expected calibration error: the average gap between confidence and real accuracy; lower is better). `python -m csi.models.calibrate` learns one number per task, the **temperature**, on the validation set, and checks the result on the test set:
+
+| Task | Temperature | ECE before | ECE after |
+|---|---|---|---|
+| Team | 0.66 | 0.078 | **0.023** |
+| Priority | 0.84 | 0.026 | **0.017** |
+| Type | 0.61 | 0.049 | **0.027** |
+
+A temperature below 1 means the model was **under-confident** (usually it is the other way round). Calibration does not change which label is predicted, only how sure the model says it is. This matters for auto-routing, because the 60% confidence limit only works if "60%" really means 60%. The temperatures are saved next to the model and used automatically.
 
 ### What the model gets wrong (error analysis)
 
@@ -258,7 +286,8 @@ python -m csi.rag.build_index      # build search indexes                    (~5
 python -m csi.nlp.topics           # find complaint themes                   (~1 min)
 python -m csi.rag.evaluate         # test the search quality                 (~1 min)
 python -m csi.rag.evaluate_kb      # test help-article search (golden set)   (~1 min)
-python -m csi.models.train --epochs 2   # train DistilBERT (~1.5-2 h on CPU, ~10 min on a GPU)
+python -m csi.models.train --epochs 2   # train DistilBERT (~1 h 40 min on CPU, ~10 min on a GPU)
+python -m csi.models.calibrate          # calibrate DistilBERT's confidence     (~2 min)
 ```
 
 You can skip the DistilBERT step. The app then uses the TF-IDF baseline.
@@ -375,6 +404,7 @@ What was built, in order. Each line matches a git commit.
 | 11 | Hand-labelled golden set for help-article search, optional cross-encoder re-ranker; dense search became the default |
 | 12 | Group routing: unsure technical tickets go to a shared technical group (auto-routing 28% → 61%) |
 | 13 | The app automatically serves whichever classifier scored better on the test set |
+| 14 | DistilBERT trained (2 epochs on CPU) and calibrated; results and an honest comparison added |
 
 ---
 

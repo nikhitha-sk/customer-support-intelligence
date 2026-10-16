@@ -117,6 +117,23 @@ def test_feedback_loop_roundtrip(tmp_path, monkeypatch):
         service.record_feedback(999, helpful=True)
 
 
+def test_temperature_scaling_softens_overconfident_probs():
+    import numpy as np
+
+    from csi.models.calibrate import apply_temperature, ece, fit_temperature
+
+    rng = np.random.default_rng(0)
+    y = rng.integers(0, 3, 2000)
+    # over-confident model: always ~95% sure but right only ~70% of the time
+    pred = np.where(rng.random(2000) < 0.7, y, (y + 1) % 3)
+    probs = np.full((2000, 3), 0.025)
+    probs[np.arange(2000), pred] = 0.95
+    t = fit_temperature(probs, y)
+    cal = apply_temperature(probs, t)
+    assert t > 1 and (cal.argmax(1) == probs.argmax(1)).all()
+    assert ece(cal, y) < ece(probs, y) and abs(cal.max(1).mean() - 0.7) < 0.03
+
+
 def test_customer_facing_drops_instructions_after_a_condition():
     from csi.genai import customer_facing
     assert customer_facing("If an incident is already open, link the customer's ticket to the parent incident.") is None

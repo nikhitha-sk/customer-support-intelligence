@@ -1,0 +1,104 @@
+{
+  "queue": {
+    "temperature": 0.66,
+    "test_ece_before": 0.0781,
+    "test_ece_after": 0.0228,
+    "test_nll_before": 1.57,
+    "test_nll_after": 1.5292,
+    "mean_confidence_before": 0.3553,
+    "mean_confidence_after": 0.452,
+    "accuracy": 0.4325,
+    "coverage_precision": [
+      {
+        "threshold": 0.3,
+        "coverage": 0.7928,
+        "precision": 0.4811
+      },
+      {
+        "threshold": 0.35,
+        "coverage": 0.6346,
+        "precision": 0.5233
+      },
+      {
+        "threshold": 0.4,
+        "coverage": 0.5,
+        "precision": 0.5646
+      },
+      {
+        "threshold": 0.45,
+        "coverage": 0.3848,
+        "precision": 0.6118
+      },
+      {
+        "threshold": 0.5,
+        "coverage": 0.2907,
+        "precision": 0.6589
+      },
+      {
+        "threshold": 0.55,
+        "coverage": 0.211,
+        "precision": 0.73
+      },
+      {
+        "threshold": 0.6,
+        "coverage": 0.1578,
+        "precision": 0.7995
+      },
+      {
+        "threshold": 0.65,
+        "coverage": 0.1224,
+        "precision": 0.869
+      },
+      {
+        "threshold": 0.7,
+        "coverage": 0.0996,
+        "precision": 0.9364
+      },
+      {
+        "threshold": 0.75,
+        "coverage": 0.092,
+        "precision": 0.9587
+      },
+      {
+        "threshold": 0.8,
+        "coverage": 0.0873,
+        "precision": 0.971
+      },
+      {
+        "threshold": 0.85,
+        "coverage": 0.0844,
+        "precision": 0.97
+      },
+      {
+        "threshold": 0.9,
+        "coverage": 0.0806,
+        "precision": 0.9791
+      },
+      {
+        "threshold": 0.95,
+        "coverage": 0.0759,
+        "precision": 0.9833
+      }
+    ]
+  },
+  "priority": {
+    "temperature": 0.84,
+    "test_ece_before": 0.0257,
+    "test_ece_after": 0.0172,
+    "test_nll_before": 0.9609,
+    "test_nll_after": 0.9575,
+    "mean_confidence_before": 0.4891,
+    "mean_confidence_after": 0.5136,
+    "accuracy": 0.5148
+  },
+  "type": {
+    "temperature": 0.61,
+    "test_ece_before": 0.049,
+    "test_ece_after": 0.0268,
+    "test_nll_before": 0.4142,
+    "test_nll_after": 0.3812,
+    "mean_confidence_before": 0.7472,
+    "mean_confidence_after": 0.8167,
+    "accuracy": 0.7962
+  }
+}

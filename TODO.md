@@ -2,7 +2,8 @@
 
 ## Phase 1: long-running jobs (code is ready, only compute time is needed)
 
-- [ ] **Fine-tune the multi-task DistilBERT** (`python -m csi.models.train --epochs 3`)
+- [x] **Fine-tune the multi-task DistilBERT**: done with 2 epochs on CPU (1 h 40 min). Test team macro F1 0.384, below the
+  baseline (0.601), still improving when stopped. **Next:** 4-5 epochs on a free Colab/Kaggle GPU (steps below).
   - About 2.5 h on a laptop CPU (2.5 s/step × 1,185 steps × 3 epochs) and about 10 min on a free Colab/Kaggle T4 GPU.
   - Fastest route: open the repo in Colab, `pip install -r requirements.txt`, run `python -m csi.data.pipeline` then `python -m csi.models.train --epochs 3`, and download `artifacts/models/multitask_distilbert/` and `reports/metrics_distilbert.json`.
   - Once the model folder exists, the API and dashboard use it automatically (INT8 dynamic quantisation for CPU serving).
@@ -14,7 +15,7 @@
 ## Phase 2: model quality
 
 - [ ] Hyper-parameter sweep (learning rate, max length 256, task loss weights) and compare against focal loss for the rare queues.
-- [ ] Probability calibration (temperature scaling) so confidence thresholds for auto-routing are reliable.
+- [x] Probability calibration (temperature scaling) so confidence thresholds for auto-routing are reliable.
 - [x] Label-noise audit: inspect the confusion between Technical Support, IT Support and Product Support, and consider merging or hierarchical routing.
 - [x] Error analysis with misclassified examples per queue (`csi/models/error_analysis.py`, a script instead of a notebook).
 - [ ] Urgency score validation: report AUROC against human "high" priority labels and tune the component weights.
