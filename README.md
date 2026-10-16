@@ -289,8 +289,8 @@ The dashboard draws each theme on a **volume × urgency** chart. Themes in the t
 - **Live triage:** paste a ticket and get the team, priority, sentiment, urgency with reasons, SLA, an action plan, a draft reply with sources, and the step-by-step agent trace.
 - **Batch triage:** upload a CSV and download a work list sorted by urgency. Emerging themes are flagged.
 - **Thread summary:** turn a long email thread into issue, impact, actions taken and next step.
-- **Overview:** key numbers, tickets by team and priority, and a live log of triaged tickets.
-- **Model performance:** baseline vs DistilBERT, confusion matrix, auto-routing chart, search scores and the data-cleaning funnel.
+- **Overview:** key numbers, tickets by team and priority, customer tone by team and by theme, agent feedback numbers, and a live log of triaged tickets.
+- **Model performance:** baseline vs DistilBERT, which model is in use, confusion matrix, auto-routing chart, calibration, error analysis, urgency check, reply quality per LLM, search scores and the data-cleaning funnel.
 - **Works without an API key:** it tries Groq (cloud) → Ollama (local) → an offline fallback, so the demo always works.
   The offline fallback picks the best sentences from the help articles. Help articles are written for agents, so it first
   **removes agent-only instructions** ("Agents must…", "check the internal console") and **rewrites the rest for the customer**
@@ -448,6 +448,7 @@ What was built, in order. Each line matches a git commit.
 | 13 | The app automatically serves whichever classifier scored better on the test set |
 | 14 | DistilBERT trained (2 epochs on CPU) and calibrated; results and an honest comparison added |
 | 15 | Sentiment for every ticket saved in SQLite; urgency score checked against human labels |
+| 16 | Dashboard shows all the new results (tone, calibration, error analysis, urgency check, reply quality) |
 
 ---
 
