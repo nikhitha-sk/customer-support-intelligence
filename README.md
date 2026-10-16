@@ -145,6 +145,15 @@ This flow is built with **LangGraph** (`csi/agent.py`). The dashboard shows ever
 
 **What this means:** some team names overlap a lot (for example "Technical Support", "IT Support" and "Product Support"). Even a person would mix them up, so about 60% is a fair starting point.
 
+### What the model gets wrong (error analysis)
+
+`python -m csi.models.error_analysis` writes [`reports/error_analysis.json`](reports/error_analysis.json). The main findings (baseline model):
+
+- **Most mistakes are between teams that sound alike.** The top mix-ups are Technical Support ↔ Product Support, Product Support → Customer Service and Technical Support ↔ IT Support. **35%** of all mistakes happen *inside* the group Technical / IT / Product Support.
+- **Grouping helps a lot.** If we first route to a "Technical (group)" and let that group pick the exact team, accuracy goes from **61% to 75%** (8 classes instead of 10). This is a good design for real use: send the ticket to the technical group automatically, and let them pick the exact team.
+- **The labels are mostly clean.** About half of the training tickets have an almost identical twin (similarity ≥ 0.95), and only **1%** of those twins have a different team label. So the mix-ups come from teams that really overlap, not from wrong labels.
+- **Honest warning: near-copies make the score look better.** About **50% of test tickets have a near-copy in the training data**. The model gets **78%** of those right, but only **45%** of truly new tickets. Expect real-world accuracy closer to the "new tickets" number.
+
 ### 2. Auto-routing: only trust the model when it is confident
 
 We don't have to auto-route every ticket. We can auto-route only the ones where the model is sure, and send the rest to a person.
@@ -309,6 +318,7 @@ What was built, in order. Each line matches a git commit.
 | 6 | Offline replies now read like they are written to the customer (agent-only sentences removed) |
 | 7 | Feedback loop: agents rate drafts and fix wrong teams; saved in SQLite, shown in the dashboard and API |
 | 8 | API security (optional API key + rate limit) and GitHub Actions CI that runs the tests |
+| 9 | Error analysis: top mix-ups, grouped routing, label-noise check and a test-set leakage check |
 
 ---
 

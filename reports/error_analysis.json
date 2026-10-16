@@ -1,0 +1,151 @@
+{
+  "tech_group": [
+    "Technical Support",
+    "IT Support",
+    "Product Support"
+  ],
+  "models": {
+    "tfidf-logreg": {
+      "accuracy": 0.6122,
+      "macro_f1": 0.6009,
+      "errors": 919,
+      "share_of_errors_inside_tech_group": 0.346,
+      "per_queue_f1": {
+        "Technical Support": 0.647,
+        "Product Support": 0.539,
+        "Customer Service": 0.559,
+        "IT Support": 0.57,
+        "Billing and Payments": 0.848,
+        "Returns and Exchanges": 0.556,
+        "Service Outages and Maintenance": 0.626,
+        "Sales and Pre-Sales": 0.516,
+        "Human Resources": 0.609,
+        "General Inquiry": 0.54
+      },
+      "group_level_routing": {
+        "classes": 8,
+        "accuracy": 0.7464,
+        "macro_f1": 0.6353
+      },
+      "top_confusions": [
+        {
+          "true": "Technical Support",
+          "predicted": "Product Support",
+          "count": 86,
+          "share_of_true_class": 0.126,
+          "inside_tech_group": true,
+          "examples": [
+            "Question | Dear Customer Support Team,\n\nI am reaching out to request comprehensive details about data integration processes for analytics platforms compatible with large-s",
+            "Problems with Network Access to Products | Users have reported sporadic access problems across various products, potentially due to misconfigurations in the network setup. The team has reviewed the netwo",
+            "Delayed Response in Project Dashboard | Users have reported experiencing sluggish response times on the project dashboard."
+          ]
+        },
+        {
+          "true": "Product Support",
+          "predicted": "Technical Support",
+          "count": 70,
+          "share_of_true_class": 0.158,
+          "inside_tech_group": true,
+          "examples": [
+            "Immediate Attention Needed: Cloud-Native SaaS Service Downtime Issue | Dear Customer Support Team,\n\nI am submitting a report regarding a critical outage impacting the availability of our cloud-native SaaS platform. Over the recent ",
+            "Immediate Attention Needed: Malfunction in Crucial SSD Encryption | Dear Support Team,\n\nI am facing a problem with the data encryption feature on my Crucial MX500 1TB SSD. Despite updating to the latest firmware, the issue remai",
+            "Critical Incident Impacting Several Device Platforms | Dear Customer Support Team,\n\nI am submitting a report regarding a major incident currently impacting multiple device platforms within the environment. There are"
+          ]
+        },
+        {
+          "true": "Product Support",
+          "predicted": "Customer Service",
+          "count": 65,
+          "share_of_true_class": 0.147,
+          "inside_tech_group": false,
+          "examples": [
+            "Inquiry about Product Integration Procedures and Security Protocols for Healthcare Deployment | Dear Support Team,\n\nI am reaching out to request detailed instructions on integrating automated cleaning robots with NAS systems within healthcare settings. Our",
+            "Request for Complete Product Service Documentation | Dear Customer Support Team,\n\nI hope this message reaches you well. I am writing to request detailed documentation related to your product services. As a current",
+            "Security Advisory | Dear Customer Support Team,\n\nI am reaching out to request comprehensive instructions on enhancing security measures while integrating Logitech K780 keyboards wi"
+          ]
+        },
+        {
+          "true": "Technical Support",
+          "predicted": "IT Support",
+          "count": 59,
+          "share_of_true_class": 0.086,
+          "inside_tech_group": true,
+          "examples": [
+            "Several Problems with Multiple Devices | Customer Support,\n\nI am writing to report various problems with my devices related to connectivity and hardware issues. Recently, I have experienced challenges ",
+            "Request for Support with Laptop Connectivity and Performance Issues | Dear Customer Support Team,\n\nI am experiencing persistent problems with my laptop's connectivity. The device frequently disconnects from Wi-Fi, disrupting my wo",
+            "Data Analytics Platform | The investment optimization component of the data analytics platform is facing connectivity problems, potentially due to recent software upgrades. After restart"
+          ]
+        },
+        {
+          "true": "Technical Support",
+          "predicted": "Customer Service",
+          "count": 52,
+          "share_of_true_class": 0.076,
+          "inside_tech_group": false,
+          "examples": [
+            "Inquiry About Platform Features | Dear Customer Support,\n\nI am eager to learn about the functionalities provided by the investment analytics platform. Could you please share comprehensive detail",
+            "Issue with Cloud-Based SaaS Service | Customer Support,\n\nI am drafting a report concerning the cloud-native SaaS platform I am currently utilizing. I have faced unforeseen problems that are disrupti",
+            "Assistance with Microsoft Dynamics 365 Integration | Kindly offer guidance on the integration process."
+          ]
+        },
+        {
+          "true": "IT Support",
+          "predicted": "Technical Support",
+          "count": 47,
+          "share_of_true_class": 0.166,
+          "inside_tech_group": true,
+          "examples": [
+            "Investigation of Sporadic Service Interruptions | Dear Customer Support Team,\n\nI am writing to report a critical problem involving sporadic outages experienced across several products hosted on our cloud-based ",
+            "Data Retrieval Issue Encountered | A financial organization faced sporadic failures in data retrieval from Cassandra 4.0 and SQL Server, impacting their analytics processes. Potential reasons inc",
+            "Assistance Required for PostgreSQL Integration | Can you offer guidance on securely integrating PostgreSQL 13 with hospital systems to safeguard medical data? It is essential to ensure adherence to compliance "
+          ]
+        },
+        {
+          "true": "Customer Service",
+          "predicted": "Technical Support",
+          "count": 41,
+          "share_of_true_class": 0.115,
+          "inside_tech_group": false,
+          "examples": [
+            "Reported Crash Issue in Digital Campaign Platform | Customer Support reports an unexpected crash in the digital campaign platform. The crash happened suddenly without prior warning, possibly caused by software co",
+            "Malfunction in Data Analytics Platform | The data analytics platform recently encountered a severe malfunction that has impacted the investment optimization process.",
+            "Reported Connectivity Problem at Financial Institution | The financial organization encountered connectivity disruptions across various services, likely due to software conflicts or network failures. Initial troublesh"
+          ]
+        },
+        {
+          "true": "Customer Service",
+          "predicted": "Product Support",
+          "count": 34,
+          "share_of_true_class": 0.095,
+          "inside_tech_group": false,
+          "examples": [
+            "Revised Overview of Security Team Responsibilities and Framework | Kindly supply an updated overview of the security team configuration within the healthcare organization. Highlight the leadership role of the CISO, the 24/7 SOC",
+            "Assistance Required for Marketing Campaign Enhancement | The digital campaigns managed by the marketing agency have recently underperformed, potentially due to outdated tactics. Initial modifications resulted in limit",
+            "Financial Data Discrepancy | Dear Customer Support, I am reporting an issue with the investment analytics system used for generating reports. Our financial firm has been experiencing inaccu"
+          ]
+        }
+      ]
+    }
+  },
+  "leakage_check": {
+    "model": "tfidf-logreg",
+    "threshold_cosine": 0.95,
+    "test_tickets_with_near_copy_in_train": 0.499,
+    "accuracy_on_near_copies": 0.7766,
+    "accuracy_on_novel_tickets": 0.4487
+  },
+  "label_noise": {
+    "threshold_cosine": 0.95,
+    "tickets_with_near_duplicate": 9599,
+    "near_duplicates_with_different_queue": 100,
+    "disagreement_rate": 0.01,
+    "top_disagreeing_pairs": {
+      "Customer Service vs Technical Support": 18,
+      "Sales and Pre-Sales vs Technical Support": 8,
+      "Customer Service vs Product Support": 8,
+      "Customer Service vs IT Support": 6,
+      "Billing and Payments vs Customer Service": 5,
+      "Billing and Payments vs Service Outages and Maintenance": 5
+    }
+  }
+}
