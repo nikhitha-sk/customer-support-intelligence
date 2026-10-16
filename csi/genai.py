@@ -5,7 +5,7 @@ import re
 
 import numpy as np
 
-from csi.llm import LLMUnavailable, get_llm
+from csi.llm import LLMClient, LLMUnavailable, get_llm
 from csi.rag.embeddings import embed
 from csi.text import redact_pii, split_sentences
 
@@ -41,9 +41,11 @@ def format_sources(kb_hits: list[dict], similar: list[dict]) -> str:
 # KB articles are written for agents. These sentences are internal instructions
 # ("Agents must...", "Ask the customer...", "check the billing console") and must not reach a customer.
 _AGENT_FACING = re.compile(
-    r"\bagents?\b|\b(internal|console|on-call|team lead|escalat\w*|page the)\b"
-    r"|^(ask|remind|forward|before replying|check|verify|first verify|share|include|link|open)\b"
-    r"|\bmust not make statements\b",
+    r"\bagents?\b|\b(internal|console|on-call|team lead|escalat\w*|page the|advise)\b"
+    # an instruction at the start, or after a condition ("If an incident is open, link the ticket...")
+    r"|(^|[,;] )(ask|remind|forward|before replying|check|verify|first verify|share|include|link|open|"
+    r"acknowledge|route|log|tell|inform|advise|treat|confirm|collect|try|record|arrange|send|do not|never)\b"
+    r"|\b(are|is) (thanked|told|informed)\b|\bmust not make statements\b",
     re.I,
 )
 # Instructions that are useful to the customer once reworded ("Ask the customer to restart..." -> "Please restart...").
@@ -55,7 +57,15 @@ _TO_SECOND_PERSON = [
     (re.compile(r"\b(the|a) customer is\b", re.I), "you are"),
     (re.compile(r"\b(the|a) customer's\b", re.I), "your"),
     (re.compile(r"\b(the|a) customer\b", re.I), "you"),
-    (re.compile(r"\bcustomers (can|do not|are|should|will|receive)\b", re.I), r"you \1"),
+    (re.compile(r"^customers (can|do not|are|should|will|receive)\b", re.I), r"you \1"),
+]
+# Fix the verb after "the customer pays" -> "you pays", and "they" that referred to the customer.
+_YOU_GRAMMAR = [
+    (re.compile(r"\byou (pays|has|is|needs|receives|gets)\b"),
+     lambda m: "you " + {"pays": "pay", "has": "have", "is": "are", "needs": "need",
+                         "receives": "receive", "gets": "get"}[m.group(1)]),
+    (re.compile(r"\btheir\b"), "your"),
+    (re.compile(r"\bthey (can|should|will)\b"), r"you \1"),
 ]
 
 
@@ -63,12 +73,15 @@ def customer_facing(sentence: str) -> str | None:
     """Turn a KB sentence into customer-facing wording, or return None if it is an agent-only instruction."""
     for pattern, repl in _TO_REQUEST:
         sentence = pattern.sub(repl, sentence)
+    if sentence.startswith("Please "):
+        sentence = sentence.replace(" and to ", " and ")  # "Please keep X and to disable Y"
     if _AGENT_FACING.search(sentence):
         return None
     for pattern, repl in _TO_SECOND_PERSON:
         sentence = pattern.sub(repl, sentence)
     if re.search(r"\byou\b", sentence, re.I):
-        sentence = re.sub(r"\btheir\b", "your", sentence)
+        for pattern, repl in _YOU_GRAMMAR:
+            sentence = pattern.sub(repl, sentence)
     return sentence[0].upper() + sentence[1:]
 
 
@@ -77,7 +90,7 @@ def _fallback_reply(ticket: str, kb_hits: list[dict], similar: list[dict]) -> st
     similar to the ticket and stitches them into a cited template."""
     candidates: list[tuple[str, str]] = []
     for h in kb_hits[:3]:
-        body = h["text"].split(": ", 1)[-1]
+        body = h["text"].split(f"{h['section']}: ", 1)[-1]  # drop the "Title - Section:" prefix
         for s in split_sentences(body):
             if (s := customer_facing(s)) is not None:
                 candidates.append((s, h["chunk_id"]))
@@ -92,8 +105,9 @@ def _fallback_reply(ticket: str, kb_hits: list[dict], similar: list[dict]) -> st
     return f"Dear <name>,\n\nThank you for reaching out, and sorry for the trouble. {body}\n\nBest regards,\nSupport Team"
 
 
-def draft_reply(ticket: str, queue: str, kb_hits: list[dict], similar: list[dict], strict: bool = False) -> dict:
-    llm = get_llm()
+def draft_reply(ticket: str, queue: str, kb_hits: list[dict], similar: list[dict], strict: bool = False,
+                llm: LLMClient | None = None) -> dict:
+    llm = llm or get_llm()
     sources = format_sources(kb_hits, similar)
     user = f"TICKET (routed to {queue}):\n{redact_pii(ticket)}\n\nSOURCES:\n{sources}"
     try:

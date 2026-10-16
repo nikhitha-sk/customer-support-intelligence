@@ -30,8 +30,9 @@ class LLMResponse:
 
 
 class LLMClient:
-    def __init__(self):
-        self.provider, self.model = self._resolve()
+    def __init__(self, provider: str | None = None):
+        """provider=None follows CSI_LLM_PROVIDER; "groq" / "ollama" / "offline" force one (used by benchmarks)."""
+        self.provider, self.model = self._resolve(provider or settings.llm_provider)
         log.info("LLM provider: %s (%s)", self.provider, self.model)
 
     def _ollama_up(self) -> bool:
@@ -42,8 +43,7 @@ class LLMClient:
         except Exception:
             return False
 
-    def _resolve(self) -> tuple[str, str]:
-        choice = settings.llm_provider
+    def _resolve(self, choice: str) -> tuple[str, str]:
         if choice in ("groq", "auto") and settings.groq_api_key:
             return "groq", settings.groq_model
         if choice in ("ollama", "auto") and self._ollama_up():

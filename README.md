@@ -197,6 +197,8 @@ The dashboard draws each theme on a **volume × urgency** chart. Themes in the t
   The offline fallback picks the best sentences from the help articles. Help articles are written for agents, so it first
   **removes agent-only instructions** ("Agents must…", "check the internal console") and **rewrites the rest for the customer**
   ("Ask the customer to restart the app" → "Please restart the app", "the customer is entitled" → "you are entitled").
+  It also catches instructions hidden after a condition ("If an incident is open, link the ticket…") and fixes grammar
+  ("the customer pays" → "you pay").
 - **Feedback loop:** under each draft reply, the agent clicks 👍 or 👎 and can pick the correct team. Ratings are saved in a
   `feedback` table in SQLite. Over time this gives us a **real evaluation set** made by people: how often drafts help, and
   how often the router picked the wrong team. The Overview page shows these numbers.

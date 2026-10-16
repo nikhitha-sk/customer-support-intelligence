@@ -83,6 +83,11 @@ def test_customer_facing_rewrites_to_second_person():
     assert customer_facing("Ask the customer to restart the application.") == "Please restart the application."
     assert customer_facing("The customer is entitled to a free replacement.") == "You are entitled to a free replacement."
     assert customer_facing("Customers can reset their password.") == "You can reset your password."
+    assert customer_facing("If the replacement costs more, the customer pays the difference.") == \
+        "If the replacement costs more, you pay the difference."
+    assert customer_facing("Ask the customer to keep the device close and to disable VPNs.") == \
+        "Please keep the device close and disable VPNs."
+    assert customer_facing("Enterprise customers can request an exception.") == "Enterprise customers can request an exception."
     assert customer_facing("Refunds are issued to the original payment method.") == \
         "Refunds are issued to the original payment method."
 
@@ -110,3 +115,9 @@ def test_feedback_loop_roundtrip(tmp_path, monkeypatch):
     assert "a@b.com" not in service.query("SELECT comment FROM feedback")["comment"].iloc[1]
     with pytest.raises(KeyError):
         service.record_feedback(999, helpful=True)
+
+
+def test_customer_facing_drops_instructions_after_a_condition():
+    from csi.genai import customer_facing
+    assert customer_facing("If an incident is already open, link the customer's ticket to the parent incident.") is None
+    assert customer_facing("For questions about compatibility, share the product data sheet.") is None
