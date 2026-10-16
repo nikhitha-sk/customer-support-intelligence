@@ -10,7 +10,7 @@
   - Then update the README results table (DistilBERT vs baseline, macro F1 per task) and the coverage-precision table.
 - [x] **Pre-compute sentiment for all 23.7k tickets** so the Overview tab can show sentiment by queue and theme (RoBERTa on CPU takes ~20 min). Store it as a `sentiment` column in the `tickets` SQLite table.
 - [ ] **Build and test the Docker images** (`docker compose up --build`). Docker Desktop was not running during development.
-- [ ] **Benchmark LLM reply quality** with Groq/Ollama on ~50 test tickets: groundedness, citation validity and latency per provider. Local `gemma2:9b` on CPU takes ~30-60 s per reply.
+- [x] **Benchmark LLM reply quality** (offline vs Ollama `gemma2:9b` on 20 tickets, `csi/eval_replies.py`; Groq still to do once a key is set) with Groq/Ollama on ~50 test tickets: groundedness, citation validity and latency per provider. Local `gemma2:9b` on CPU takes ~30-60 s per reply.
 
 ## Phase 2: model quality
 
@@ -30,6 +30,9 @@
 - [ ] Two-stage hierarchical router: a group model (8 classes) plus a small model inside the technical group,
   compared with the current probability-sum group fallback in `csi/routing.py`.
 - [ ] Grow the KB golden set beyond 40 questions, including exact error codes and product names.
+
+- [ ] Grounding check: do not count clarifying questions to the customer ("Could you tell me…?") as unsupported
+  claims, then re-run `python -m csi.eval_replies`.
 
 ## Phase 3: product and deployment
 

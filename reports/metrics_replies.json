@@ -1,0 +1,42 @@
+{
+  "tickets": 20,
+  "sampled_from": "test split",
+  "results": [
+    {
+      "provider": "offline",
+      "model": "none",
+      "tickets": 20,
+      "mean_groundedness": 1.0,
+      "guardrail_pass_rate_first_try": 1.0,
+      "guardrail_pass_rate_after_redraft": 1.0,
+      "valid_citation_rate": 1.0,
+      "pii_leaks": 0,
+      "mean_words": 48.8,
+      "latency_p50_s": 0.12,
+      "latency_p95_s": 0.14,
+      "fell_back_to_offline": 0.0,
+      "example": {
+        "ticket_id": "T010737",
+        "reply": "Dear <name>,\n\nThank you for reaching out, and sorry for the trouble. We offer Starter, Professional and Enterprise plans. [KB-009#0] Starter and Professional can be bought online, billed monthly or annually (annual billing saves 15%). [KB-009#0] Enterprise pricing is quoted based on seats, usage and support level. [KB-009#0]\n\nBest regards,\nSupport Team"
+      }
+    },
+    {
+      "provider": "ollama",
+      "model": "gemma2:9b",
+      "tickets": 20,
+      "mean_groundedness": 0.779,
+      "guardrail_pass_rate_first_try": 0.55,
+      "guardrail_pass_rate_after_redraft": 0.65,
+      "valid_citation_rate": 1.0,
+      "pii_leaks": 0,
+      "mean_words": 52.4,
+      "latency_p50_s": 60.39,
+      "latency_p95_s": 112.22,
+      "fell_back_to_offline": 0.0,
+      "example": {
+        "ticket_id": "T010737",
+        "reply": "Hi <name>,\n\nWe offer a range of healthcare protection services, including emergency response and secure transportation. [T007628]  \n\nTo give you more detailed information about our services, could you tell me what specific services you're interested in?"
+      }
+    }
+  ]
+}

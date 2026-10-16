@@ -147,6 +147,7 @@ This flow is built with **LangGraph** (`csi/agent.py`). The dashboard shows ever
 - **Group routing** more than doubles the tickets that skip manual sorting (**28% → 61%**) with almost the same correctness.
 - **Help-article search:** meaning-based (dense) search finds the right section first **85%** of the time on a hand-labelled test.
 - **Urgency score:** P1 tickets are marked "high" by humans **81%** of the time, P4 tickets only 17%.
+- **Replies:** a local LLM (Gemma 9B) writes natural replies with real citations and no data leaks, but takes ~1 minute on a CPU, and 65% pass the strict safety check.
 
 ### 1. Sending tickets to the right team (test set, 2,370 tickets)
 
@@ -289,6 +290,26 @@ The SLA tiers line up well with the human labels:
 We found **20 themes** (the number was picked with the silhouette score). Examples: *service / outage / server* (65% high priority), *security / breach / unauthorized access*, *billing / payment / discrepancies*, *crashes / software / login*.
 
 The dashboard draws each theme on a **volume × urgency** chart. Themes in the top-right corner are big *and* urgent, so fix those first. When you upload a new batch of tickets, the system also flags **emerging themes**: themes that suddenly appear much more than usual (checked with a z-test).
+
+### 10. How good are the drafted replies? (per LLM provider)
+
+`python -m csi.eval_replies --n 20` sends the same 20 test tickets (with the same search results) to each reply writer, and runs the safety check on every draft ([`reports/metrics_replies.json`](reports/metrics_replies.json)). Groq was not tested because no API key was set.
+
+| | Offline fallback | Ollama `gemma2:9b` (local, CPU) |
+|---|---|---|
+| Groundedness (share of sentences backed by a source) | 1.00 | 0.78 |
+| Passed the safety check, first try | 100% | 55% |
+| Passed after one stricter redraft | 100% | 65% |
+| Replies with valid citations | 100% | 100% |
+| Personal data leaked | 0 | 0 |
+| Time per reply (typical / slowest 5%) | 0.1 s | 60 s / 112 s |
+
+**How to read this:**
+
+- The offline fallback scores a perfect 1.00 **because it copies sentences from the sources**. Copied sentences are always "backed by a source". This does not mean it answers the question well.
+- Gemma writes more natural, personal replies, but a third of them still fail the check after a redraft. Some failures are not real problems: a polite question like *"Could you tell me which services you are interested in?"* has no source, so the check counts it as unsupported. Fixing this is on the TODO list.
+- A local 9B model on a laptop CPU takes about **1 minute per reply**. That is fine for a draft an agent reviews, but too slow for live chat. A GPU or a hosted model (Groq) would be much faster.
+- In every case, **no personal data leaked** and **every citation pointed to a real source**.
 
 ---
 
@@ -460,6 +481,7 @@ What was built, in order. Each line is one step of work (`git log` shows every c
 | 14 | DistilBERT trained (2 epochs on CPU) and calibrated; results and an honest comparison added |
 | 15 | Sentiment for every ticket saved in SQLite; urgency score checked against human labels |
 | 16 | Dashboard shows all the new results (tone, calibration, error analysis, urgency check, reply quality) |
+| 17 | Reply-quality benchmark: offline fallback vs local Gemma 9B (Ollama) on 20 test tickets |
 
 ---
 
