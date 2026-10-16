@@ -76,7 +76,7 @@ Step by step:
    - risky words like "outage", "hacked", "charged twice".
 
    The score maps to an SLA tier: **P1** (reply within 1 hour) to **P4** (3 business days). The system also lists the reasons, so a person can see *why*.
-4. **Escalate (only if needed).** If urgency is 80 or more, or the model is less than 60% sure about the team, a human lead reviews the ticket.
+4. **Route or escalate.** If urgency is 80 or more, a human lead reviews the ticket. If the model is at least 60% sure about the team, the ticket goes there automatically. If it is unsure which *technical* team, but sure the ticket is technical, it goes to the shared technical group. Otherwise a person decides, with the model's guess already filled in.
 5. **Search.** Find the most useful help-article sections (meaning-based search, chosen by a test, see results 3b) and the most similar *solved* tickets.
 6. **Draft a reply.** An AI model (LLM) writes a short reply using **only** the search results, and cites them like `[KB-002#0]`.
 7. **Safety check (guardrail).** Check that every sentence is supported by a source, that the citations are real, and that no personal data leaks. If the check fails, the AI tries again in a stricter mode.
@@ -170,6 +170,18 @@ We don't have to auto-route every ticket. We can auto-route only the ones where 
 | 0.80 | 11% | 97% |
 
 **What this means:** at 0.5, **42% of tickets skip manual sorting and 82% of them go to the right team**. The limit can be changed with `CSI_ROUTE_THRESHOLD`.
+
+#### Group routing: send "clearly technical" tickets to the technical group
+
+The error analysis showed that most mistakes are between Technical, IT and Product Support. Often the model is unsure *which* of these three teams, but quite sure it is *one of them*. In that case we now send the ticket to a shared **"Technical (group)"** queue, and that group picks the exact team. This logic is in `csi/routing.py`.
+
+| Confidence limit | Auto-routed (team only) | Correct | Auto-routed (team **or** group) | Correct |
+|---|---|---|---|---|
+| 0.5 | 42% | 82% | **74%** | 83% |
+| 0.6 (default) | 28% | 89% | **61%** | 88% |
+| 0.7 | 18% | 93% | **45%** | 92% |
+
+**What this means:** at the default limit, the share of tickets that skip manual sorting **more than doubles (28% → 61%)**, and the share sent to the right place stays almost the same. (Baseline model. "Correct" for a group route means the ticket really belongs to one of the three technical teams.)
 
 ### 3. Finding similar solved tickets (300 test searches over 18,952 tickets)
 
@@ -307,6 +319,7 @@ csi/
   rag/                 split articles into chunks, embeddings, search indexes, re-ranker, search evaluation
   llm.py               connects to Groq / Ollama / offline mode
   genai.py             draft replies, summaries, safety check
+  routing.py           the routing rule (team, technical group, or human)
   agent.py             the LangGraph triage flow
   service.py           shared logic used by the API and the dashboard
   api/main.py          FastAPI app
@@ -358,6 +371,7 @@ What was built, in order. Each line matches a git commit.
 | 9 | Error analysis: top mix-ups, grouped routing, label-noise check and a test-set leakage check |
 | 10 | Offline reply filter catches more agent-only instructions and fixes grammar |
 | 11 | Hand-labelled golden set for help-article search, optional cross-encoder re-ranker; dense search became the default |
+| 12 | Group routing: unsure technical tickets go to a shared technical group (auto-routing 28% → 61%) |
 
 ---
 

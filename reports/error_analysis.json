@@ -124,6 +124,48 @@
             "Financial Data Discrepancy | Dear Customer Support, I am reporting an issue with the investment analytics system used for generating reports. Our financial firm has been experiencing inaccu"
           ]
         }
+      ],
+      "routing_with_group_fallback": [
+        {
+          "threshold": 0.4,
+          "queue_only_coverage": 0.6338,
+          "queue_only_precision": 0.7383,
+          "with_group_coverage": 0.8439,
+          "with_group_precision": 0.751,
+          "routed_to_group": 0.2101
+        },
+        {
+          "threshold": 0.5,
+          "queue_only_coverage": 0.4156,
+          "queue_only_precision": 0.8244,
+          "with_group_coverage": 0.7359,
+          "with_group_precision": 0.8326,
+          "routed_to_group": 0.3203
+        },
+        {
+          "threshold": 0.6,
+          "queue_only_coverage": 0.2802,
+          "queue_only_precision": 0.887,
+          "with_group_coverage": 0.6089,
+          "with_group_precision": 0.8815,
+          "routed_to_group": 0.3287
+        },
+        {
+          "threshold": 0.7,
+          "queue_only_coverage": 0.1781,
+          "queue_only_precision": 0.9289,
+          "with_group_coverage": 0.4485,
+          "with_group_precision": 0.92,
+          "routed_to_group": 0.2705
+        },
+        {
+          "threshold": 0.8,
+          "queue_only_coverage": 0.111,
+          "queue_only_precision": 0.9734,
+          "with_group_coverage": 0.2844,
+          "with_group_precision": 0.951,
+          "routed_to_group": 0.1734
+        }
       ]
     }
   },

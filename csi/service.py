@@ -17,6 +17,7 @@ from csi.nlp.topics import get_topic_model
 from csi.nlp.urgency import urgency_score
 from csi.rag.embeddings import embed
 from csi.rag.retriever import get_retriever
+from csi.routing import route
 from csi.text import build_ticket_text, redact_pii
 
 LOG_SCHEMA = """CREATE TABLE IF NOT EXISTS triage_log (
@@ -94,9 +95,8 @@ def classify_batch(tickets: list[dict], source: str = "batch", log: bool = True)
             "urgency": u["score"], "tier": u["tier"], "sla": u["first_response_sla"],
             "urgency_drivers": "; ".join(u["drivers"]),
             "topic": tp["topic"], "topic_label": tp["label"],
-            "routing": "human_review" if (u["score"] >= settings.escalation_urgency or
-                                          p["queue"]["confidence"] < settings.route_confidence_threshold)
-            else "auto_route",
+            "routing": (r := route(p["queue"]["probabilities"], u["score"]))["decision"],
+            "route_to": r["target"],
             "received_at": now, "source": source, "latency_ms": per_ticket_ms,
         })
     if log:

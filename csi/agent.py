@@ -22,6 +22,7 @@ from csi.nlp.sentiment import get_sentiment
 from csi.nlp.urgency import urgency_score
 from csi.rag.embeddings import embed
 from csi.rag.retriever import get_retriever
+from csi.routing import route
 from csi.text import build_ticket_text, redact_pii
 
 MAX_DRAFT_ATTEMPTS = 2
@@ -69,13 +70,7 @@ def assess_urgency(state: TriageState) -> TriageState:
     t = time.time()
     sent = get_sentiment().score([state["text"]])[0]
     urg = urgency_score(state["classification"]["priority"]["probabilities"], sent["negative"], state["text"])
-    conf = state["classification"]["queue"]["confidence"]
-    reasons = []
-    if urg["score"] >= settings.escalation_urgency:
-        reasons.append(f"urgency {urg['score']} >= {settings.escalation_urgency}")
-    if conf < settings.route_confidence_threshold:
-        reasons.append(f"queue confidence {conf:.0%} < {settings.route_confidence_threshold:.0%}")
-    routing = {"decision": "human_review" if reasons else "auto_route", "reasons": reasons}
+    routing = route(state["classification"]["queue"]["probabilities"], urg["score"])
     return {"sentiment": sent, "urgency": urg, "routing": routing,
             "trace": _log(state, "assess_urgency", t,
                           f"sentiment={sent['label']}, urgency={urg['score']} ({urg['tier']}), "
@@ -123,14 +118,15 @@ def guardrail(state: TriageState) -> TriageState:
 
 def finalize(state: TriageState) -> TriageState:
     t = time.time()
-    c, u, g = state["classification"], state["urgency"], state["guardrail"]
-    needs_review = state["routing"]["decision"] == "human_review" or not g["passed"]
+    routing, u, g = state["routing"], state["urgency"], state["guardrail"]
+    needs_review = routing["decision"] == "human_review" or not g["passed"]
     plan = {
-        "assign_to_queue": c["queue"]["label"],
+        "assign_to_queue": routing["target"],
+        "suggested_queue": routing["suggested_queue"],
         "priority": u["tier"],
         "first_response_sla": u["first_response_sla"],
         "reply_mode": "agent must review draft" if needs_review else "draft ready to send after quick check",
-        "escalated": "escalated_to" in state["routing"],
+        "escalated": "escalated_to" in routing,
     }
     return {"action_plan": plan, "trace": _log(state, "finalize", t, plan["reply_mode"])}
 

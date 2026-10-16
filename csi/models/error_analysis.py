@@ -20,26 +20,52 @@ import pandas as pd
 from sklearn.metrics import accuracy_score, f1_score
 
 from csi.config import settings
+from csi.routing import GROUP_LABEL, TECH_GROUP, route
 
 log = logging.getLogger("csi.error_analysis")
 
-TECH_GROUP = ("Technical Support", "IT Support", "Product Support")
-GROUP_LABEL = "Technical (group)"
 
 
 def merge_group(labels) -> np.ndarray:
     return np.array([GROUP_LABEL if l in TECH_GROUP else l for l in labels])
 
 
-def predictions(test: pd.DataFrame) -> dict[str, np.ndarray]:
-    """Queue predictions on the test set from every model that has been trained."""
+def probabilities(test: pd.DataFrame) -> dict[str, np.ndarray]:
+    """Queue probabilities on the test set (columns in settings.queues order) from every trained model.
+    The transformer is evaluated exactly as it is served (INT8, calibrated if a temperature exists)."""
     p = settings.paths
-    out = {"tfidf-logreg": joblib.load(p.models / "baseline_queue.joblib").predict(test["text"])}
-    pred_file = p.processed / "test_predictions.parquet"
-    if pred_file.exists():
-        pred = pd.read_parquet(pred_file).set_index("ticket_id").loc[test["ticket_id"]]
-        out["distilbert-multitask"] = pred["pred_queue"].to_numpy()
+    labels = list(settings.queues)
+    base = joblib.load(p.models / "baseline_queue.joblib")
+    out = {"tfidf-logreg": base.predict_proba(test["text"])[:, [list(base.classes_).index(l) for l in labels]]}
+    if (p.models / "multitask_distilbert" / "heads.pt").exists():
+        from csi.models.predictor import get_classifier
+        clf, texts, rows = get_classifier(), test["text"].tolist(), []
+        for i in range(0, len(texts), 64):
+            rows += [[r["queue"]["probabilities"][l] for l in labels] for r in clf.predict(texts[i:i + 64])]
+        out["distilbert-multitask"] = np.array(rows)
     return out
+
+
+def routing_curve(y: np.ndarray, probs: np.ndarray, thresholds=(0.4, 0.5, 0.6, 0.7, 0.8)) -> list[dict]:
+    """Auto-routing with and without the technical-group fallback (urgency ignored here)."""
+    labels = list(settings.queues)
+    rows = []
+    for th in thresholds:
+        decisions = [route(dict(zip(labels, pr)), urgency=0, threshold=th) for pr in probs]
+        queue_ok = np.array([d["decision"] == "auto_route" for d in decisions])
+        group_ok = np.array([d["decision"] == "auto_route_group" for d in decisions])
+        pred = np.array([d["suggested_queue"] for d in decisions])
+        correct = np.where(queue_ok, pred == y, np.isin(y, TECH_GROUP))
+        auto = queue_ok | group_ok
+        rows.append({
+            "threshold": th,
+            "queue_only_coverage": round(float(queue_ok.mean()), 4),
+            "queue_only_precision": round(float(correct[queue_ok].mean()), 4) if queue_ok.any() else None,
+            "with_group_coverage": round(float(auto.mean()), 4),
+            "with_group_precision": round(float(correct[auto].mean()), 4) if auto.any() else None,
+            "routed_to_group": round(float(group_ok.mean()), 4),
+        })
+    return rows
 
 
 def confusion_pairs(y: np.ndarray, pred: np.ndarray, test: pd.DataFrame, top: int = 8) -> list[dict]:
@@ -102,7 +128,9 @@ def main() -> dict:
     merged_labels = sorted(set(merge_group(labels)))
 
     report: dict = {"tech_group": list(TECH_GROUP), "models": {}}
-    for name, pred in predictions(test).items():
+    all_probs = probabilities(test)
+    for name, probs in all_probs.items():
+        pred = np.array(labels)[probs.argmax(1)]
         errors = y != pred
         in_group = errors & np.isin(y, TECH_GROUP) & np.isin(pred, TECH_GROUP)
         ym, pm = merge_group(y), merge_group(pred)
@@ -120,6 +148,7 @@ def main() -> dict:
                                                  zero_division=0)), 4),
             },
             "top_confusions": confusion_pairs(y, pred, test),
+            "routing_with_group_fallback": routing_curve(y, probs),
         }
         m = report["models"][name]
         log.info("%s: acc %.3f -> %.3f with tech group merged; %.0f%% of errors inside the tech group",
@@ -127,7 +156,8 @@ def main() -> dict:
                  100 * m["share_of_errors_inside_tech_group"])
 
     best = max(report["models"], key=lambda n: report["models"][n]["macro_f1"])
-    report["leakage_check"] = {"model": best, **leakage_check(test, predictions(test)[best])}
+    best_pred = np.array(labels)[all_probs[best].argmax(1)]
+    report["leakage_check"] = {"model": best, **leakage_check(test, best_pred)}
     log.info("leakage check: %s", report["leakage_check"])
     report["label_noise"] = label_noise()
     log.info("label noise: %s", report["label_noise"])

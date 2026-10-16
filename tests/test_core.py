@@ -127,3 +127,20 @@ def test_section_ranking_keeps_each_section_once():
     from csi.rag.evaluate_kb import section_ranking
     hits = [{"doc_id": "KB-1", "section": "A"}, {"doc_id": "KB-1", "section": "A"}, {"doc_id": "KB-2", "section": "B"}]
     assert section_ranking(hits) == [("KB-1", "A"), ("KB-2", "B")]
+
+
+def test_route_sends_unsure_technical_tickets_to_the_group():
+    from csi.routing import GROUP_LABEL, route
+    probs = {"Technical Support": 0.40, "IT Support": 0.30, "Product Support": 0.15, "Billing and Payments": 0.15}
+    r = route(probs, urgency=30, threshold=0.6, escalation=80)
+    assert r["decision"] == "auto_route_group" and r["target"] == GROUP_LABEL
+    assert r["suggested_queue"] == "Technical Support"
+
+
+def test_route_confident_urgent_and_unsure_cases():
+    from csi.routing import route
+    sure = {"Billing and Payments": 0.9, "Customer Service": 0.1}
+    assert route(sure, urgency=30, threshold=0.6, escalation=80)["decision"] == "auto_route"
+    assert route(sure, urgency=95, threshold=0.6, escalation=80)["decision"] == "human_review"
+    unsure = {"Billing and Payments": 0.5, "Customer Service": 0.5}
+    assert route(unsure, urgency=30, threshold=0.6, escalation=80)["decision"] == "human_review"
