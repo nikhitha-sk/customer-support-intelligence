@@ -210,7 +210,9 @@ The error analysis showed that most mistakes are between Technical, IT and Produ
 | 0.6 (default) | 28% | 89% | **61%** | 88% |
 | 0.7 | 18% | 93% | **45%** | 92% |
 
-**What this means:** at the default limit, the share of tickets that skip manual sorting **more than doubles (28% → 61%)**, and the share sent to the right place stays almost the same. (Baseline model. "Correct" for a group route means the ticket really belongs to one of the three technical teams.)
+**What this means:** at the default limit, the share of tickets that skip manual sorting **more than doubles (28% → 61%)**, and the share sent to the right place stays almost the same. (Baseline model. "Correct" for a group route means the ticket really belongs to one of the three technical teams.) The same idea works for DistilBERT: 16% → 56% auto-routed at the default limit.
+
+`python -m csi.models.error_analysis` checks both models. DistilBERT is tested exactly as the app would run it: compressed to 8-bit numbers (INT8) for speed, which costs about 1.6 points of accuracy (44.7% → 43.1%).
 
 ### 3. Finding similar solved tickets (300 test searches over 18,952 tickets)
 

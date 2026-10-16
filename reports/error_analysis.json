@@ -167,6 +167,169 @@
           "routed_to_group": 0.1734
         }
       ]
+    },
+    "distilbert-multitask": {
+      "accuracy": 0.4308,
+      "macro_f1": 0.3566,
+      "errors": 1349,
+      "share_of_errors_inside_tech_group": 0.368,
+      "per_queue_f1": {
+        "Technical Support": 0.517,
+        "Product Support": 0.329,
+        "Customer Service": 0.341,
+        "IT Support": 0.263,
+        "Billing and Payments": 0.755,
+        "Returns and Exchanges": 0.296,
+        "Service Outages and Maintenance": 0.496,
+        "Sales and Pre-Sales": 0.288,
+        "Human Resources": 0.281,
+        "General Inquiry": 0.0
+      },
+      "group_level_routing": {
+        "classes": 8,
+        "accuracy": 0.6405,
+        "macro_f1": 0.4029
+      },
+      "top_confusions": [
+        {
+          "true": "Product Support",
+          "predicted": "Technical Support",
+          "count": 162,
+          "share_of_true_class": 0.367,
+          "inside_tech_group": true,
+          "examples": [
+            "Inquiry for Guidance on Smart Water Leak Detector Sensor Integration | Dear Customer Support,\n\nI am seeking comprehensive instructions for configuring and integrating the Smart Water Leak Detectors within a healthcare setting. Spec",
+            "Inquiry about Product Integration Procedures and Security Protocols for Healthcare Deployment | Dear Support Team,\n\nI am reaching out to request detailed instructions on integrating automated cleaning robots with NAS systems within healthcare settings. Our",
+            "Wireless Internet Connection Problems | Dear Customer Support Team,\n\nI hope this message reaches you well. I am writing to report persistent issues with the Wi-Fi connection at our office. Over the pa"
+          ]
+        },
+        {
+          "true": "IT Support",
+          "predicted": "Technical Support",
+          "count": 138,
+          "share_of_true_class": 0.488,
+          "inside_tech_group": true,
+          "examples": [
+            "Investigation of Sporadic Service Interruptions | Dear Customer Support Team,\n\nI am writing to report a critical problem involving sporadic outages experienced across several products hosted on our cloud-based ",
+            "Latency Problem in Financial System | A financial organization is facing delays in data processing within their system. It is suspected that recent software enhancements might be contributing to the",
+            "Support for SaaS Project Management Integration | Customer service inquiry regarding best practices for integrating a SaaS project management solution into the current infrastructure. Could you offer guidance t"
+          ]
+        },
+        {
+          "true": "Customer Service",
+          "predicted": "Technical Support",
+          "count": 98,
+          "share_of_true_class": 0.275,
+          "inside_tech_group": false,
+          "examples": [
+            "Service Disruption on Cloud-Based SaaS Platform | Currently facing sporadic access problems on our cloud-native SaaS system. The suspected reason appears to be linked to orchestration resource management within",
+            " | Dear Customer Support, I am reaching out to request comprehensive guidance on integrating the Smart-Rauchmelder with the Smartsheet scalable SaaS project manage",
+            "Assistance with Digital Marketing Integration | Customer Support, I am seeking guidance on integrating digital marketing strategies with Western Digital Book Duo on Shopify. Could you provide detailed instruc"
+          ]
+        },
+        {
+          "true": "Product Support",
+          "predicted": "Customer Service",
+          "count": 91,
+          "share_of_true_class": 0.206,
+          "inside_tech_group": false,
+          "examples": [
+            "Revise Organizational Summary | Dear Customer Support Team,\n\nI am requesting an update to the organizational summary to accurately depict our current structural capabilities. In particular, pl",
+            "Request for Complete Product Service Documentation | Dear Customer Support Team,\n\nI hope this message reaches you well. I am writing to request detailed documentation related to your product services. As a current",
+            "Security Policy Adherence | Dear Customer Support Team,\n\nI hope this message reaches you in good health. I am reaching out to highlight a security policy adherence issue encountered on my "
+          ]
+        },
+        {
+          "true": "Technical Support",
+          "predicted": "Customer Service",
+          "count": 90,
+          "share_of_true_class": 0.131,
+          "inside_tech_group": false,
+          "examples": [
+            "Question | Dear Customer Support Team,\n\nI am reaching out to request comprehensive details about data integration processes for analytics platforms compatible with large-s",
+            "Inquiry About Platform Features | Dear Customer Support,\n\nI am eager to learn about the functionalities provided by the investment analytics platform. Could you please share comprehensive detail",
+            "Issue with Cloud-Based SaaS Service | Customer Support,\n\nI am drafting a report concerning the cloud-native SaaS platform I am currently utilizing. I have faced unforeseen problems that are disrupti"
+          ]
+        },
+        {
+          "true": "Technical Support",
+          "predicted": "Product Support",
+          "count": 86,
+          "share_of_true_class": 0.126,
+          "inside_tech_group": true,
+          "examples": [
+            "Healthcare Data Security Incident | A healthcare organization encountered unauthorized attempts to access sensitive medical information.",
+            " | I am reaching out to inquire about digital strategies to implement and enhance brand growth across various product lines. Could you provide detailed information",
+            "Recent Incident on Project Management SaaS Platform Today | Customer Support is documenting a recent incident involving the project management SaaS platform. The issue appears to be related to potential network or softwa"
+          ]
+        },
+        {
+          "true": "Technical Support",
+          "predicted": "IT Support",
+          "count": 65,
+          "share_of_true_class": 0.095,
+          "inside_tech_group": true,
+          "examples": [
+            "Several Problems with Multiple Devices | Customer Support,\n\nI am writing to report various problems with my devices related to connectivity and hardware issues. Recently, I have experienced challenges ",
+            "Request for Support with Laptop Connectivity and Performance Issues | Dear Customer Support Team,\n\nI am experiencing persistent problems with my laptop's connectivity. The device frequently disconnects from Wi-Fi, disrupting my wo",
+            "Data Analytics Platform | The investment optimization component of the data analytics platform is facing connectivity problems, potentially due to recent software upgrades. After restart"
+          ]
+        },
+        {
+          "true": "Customer Service",
+          "predicted": "Product Support",
+          "count": 57,
+          "share_of_true_class": 0.16,
+          "inside_tech_group": false,
+          "examples": [
+            "Enhancement Required for Marketing Tactics | Expressing concern over the digital strategies adopted by the marketing agency. Notwithstanding the efforts, the brand has not witnessed significant growth. It ",
+            "Assistance Required for Marketing Campaign Enhancement | The digital campaigns managed by the marketing agency have recently underperformed, potentially due to outdated tactics. Initial modifications resulted in limit",
+            "Digital Campaigns Underperformance in the Quarter | Customer Support, composing a report on digital campaigns, indicates that the marketing agency's efforts fell short due to potential changes in the platform's a"
+          ]
+        }
+      ],
+      "routing_with_group_fallback": [
+        {
+          "threshold": 0.4,
+          "queue_only_coverage": 0.4861,
+          "queue_only_precision": 0.5634,
+          "with_group_coverage": 0.7557,
+          "with_group_precision": 0.608,
+          "routed_to_group": 0.2696
+        },
+        {
+          "threshold": 0.5,
+          "queue_only_coverage": 0.2831,
+          "queue_only_precision": 0.6751,
+          "with_group_coverage": 0.67,
+          "with_group_precision": 0.7135,
+          "routed_to_group": 0.3869
+        },
+        {
+          "threshold": 0.6,
+          "queue_only_coverage": 0.1574,
+          "queue_only_precision": 0.8097,
+          "with_group_coverage": 0.5578,
+          "with_group_precision": 0.7905,
+          "routed_to_group": 0.4004
+        },
+        {
+          "threshold": 0.7,
+          "queue_only_coverage": 0.1013,
+          "queue_only_precision": 0.9167,
+          "with_group_coverage": 0.4426,
+          "with_group_precision": 0.8398,
+          "routed_to_group": 0.3414
+        },
+        {
+          "threshold": 0.8,
+          "queue_only_coverage": 0.084,
+          "queue_only_precision": 0.9749,
+          "with_group_coverage": 0.3224,
+          "with_group_precision": 0.8848,
+          "routed_to_group": 0.2384
+        }
+      ]
     }
   },
   "leakage_check": {
